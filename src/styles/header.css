@@ -1,0 +1,77 @@
+.cl-header {
+  border-bottom: 1px solid var(--border-color);
+  background: color-mix(in oklab, var(--surface) 92%, var(--accent));
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+
+.cl-header-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0.8rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.cl-brand {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.cl-badge {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.4rem;
+  background: var(--accent);
+  color: #05110f;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  letter-spacing: 0.04em;
+}
+
+.cl-title {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+}
+
+.cl-subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.cl-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cl-link-btn,
+.cl-theme-toggle {
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 0.5rem;
+  padding: 0.42rem 0.66rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cl-link-btn:hover,
+.cl-theme-toggle:hover {
+  border-color: var(--accent);
+}
+
+@media (max-width: 620px) {
+  .cl-header-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "crypto-lab-ciphertext-mirror",
+  "private": true,
+  "version": "0.1.0",
+  "description": "FO re-encryption as oracle: three papers, three replays. ML-KEM attack/defense visualizations.",
+  "type": "module",
+  "author": "Paul Clark <paul@systemslibrarian.dev>",
+  "license": "MIT",
+  "keywords": [
+    "post-quantum",
+    "ml-kem",
+    "kyber",
+    "side-channel",
+    "fo-transform",
+    "crypto-lab"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/systemslibrarian/crypto-lab-ciphertext-mirror"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^8.0.9",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,133 @@
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.paper-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  position: relative;
+  min-height: 220px;
+}
+
+.paper-card h2 {
+  margin-top: 0;
+}
+
+.paper-card p {
+  color: var(--text-muted);
+}
+
+.scholar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface-alt);
+}
+
+.paper-pill {
+  border-radius: 999px;
+  padding: 0.08rem 0.45rem;
+  background: color-mix(in oklab, var(--accent) 24%, transparent);
+}
+
+.open-btn {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: transparent;
+  border-radius: 0.55rem;
+  padding: 0.44rem 0.74rem;
+  cursor: pointer;
+}
+
+.open-btn:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.card-shell {
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  background: var(--surface);
+  display: grid;
+  gap: 1rem;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.card-setup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.card-setup input,
+.card-setup select {
+  min-height: 2.25rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--border-color);
+  padding: 0.3rem 0.5rem;
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.reality-panel {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.8rem;
+}
+
+.reality-panel h4 {
+  margin-bottom: 0.4rem;
+}
+
+.reality-panel p,
+.reality-panel li {
+  color: var(--text-muted);
+}
+
+.trace-canvas {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border-color);
+  background: color-mix(in oklab, var(--surface-alt) 88%, var(--bg));
+}
+
+.mirror-wrap {
+  display: grid;
+  place-items: center;
+}
+
+@media (min-width: 860px) {
+  .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .card-setup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .open-btn {
+    width: 100%;
+  }
+}

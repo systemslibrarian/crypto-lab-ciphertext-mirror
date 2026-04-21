@@ -1,0 +1,62 @@
+:root {
+  --bg: #f6f7f4;
+  --surface: #fffdf7;
+  --surface-alt: #eef1e8;
+  --border-color: #bec6b8;
+  --text: #1f2a22;
+  --text-muted: #5a655d;
+  --accent: #2a9d8f;
+  --accent-hover: #1e7b70;
+  --danger: #c44536;
+  --success: #2d7a46;
+  --warning: #c9831a;
+  --mirror-glow: #5ec3de;
+  --mirror-crack: #e76f51;
+  --mirror-cloud: #8e9aa7;
+}
+
+:root[data-theme='dark'] {
+  --bg: #101a18;
+  --surface: #182422;
+  --surface-alt: #223130;
+  --border-color: #36514c;
+  --text: #ecf3ef;
+  --text-muted: #acc0b5;
+  --accent: #5cc9b8;
+  --accent-hover: #8ce0d3;
+  --danger: #ef7e72;
+  --success: #6dc08a;
+  --warning: #f0b861;
+  --mirror-glow: #7fd6ff;
+  --mirror-crack: #ff8f7a;
+  --mirror-cloud: #9eb0bd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at top left, color-mix(in oklab, var(--surface) 84%, var(--accent)), var(--bg) 50%);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', 'Segoe UI', Tahoma, sans-serif;
+  min-height: 100%;
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--accent) 70%, white);
+  outline-offset: 2px;
+}

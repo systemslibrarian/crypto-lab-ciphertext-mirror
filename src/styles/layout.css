@@ -1,0 +1,44 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 1.2rem 1rem 2rem;
+  flex: 1;
+}
+
+.cl-footer {
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1.25rem 1rem;
+  font-size: 0.92rem;
+}
+
+.cl-footer a {
+  color: inherit;
+}
+
+.mirror-wrap svg,
+.paper-card,
+.card-shell,
+.open-btn,
+.cl-link-btn,
+.cl-theme-toggle {
+  transition: all 180ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
