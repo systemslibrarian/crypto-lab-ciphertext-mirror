@@ -1,5 +1,4 @@
 import { renderCardGrid } from './components/CardGrid'
-import { renderFooter } from './components/Footer'
 import { renderHeader } from './components/Header'
 import { renderMaskedComparisonCard } from './cards/card-masked-comparison'
 import { renderImperfectDfOracleCard } from './cards/card-imperfect-df-oracle'
@@ -23,9 +22,8 @@ page.className = 'page'
 const header = renderHeader()
 const main = document.createElement('main')
 main.id = 'app'
-const footer = renderFooter()
 
-page.append(header, main, footer)
+page.append(header, main)
 root.append(page)
 
 function setupThemeToggle(): void {

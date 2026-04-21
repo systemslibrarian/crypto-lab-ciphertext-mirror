@@ -24,6 +24,15 @@ main {
   color: inherit;
 }
 
+.scripture-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  margin-top: 2rem;
+}
+
 .mirror-wrap svg,
 .paper-card,
 .card-shell,
