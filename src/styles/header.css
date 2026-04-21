@@ -1,4 +1,5 @@
 .cl-header {
+  position: relative;
   border-bottom: 1px solid var(--border-color);
   background: color-mix(in oklab, var(--surface) 92%, var(--accent));
   position: sticky;
@@ -64,9 +65,23 @@
   cursor: pointer;
 }
 
+.cl-theme-toggle {
+  width: 2.6rem;
+  height: 2.6rem;
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  padding: 0;
+  z-index: 10;
+}
+
 .cl-link-btn:hover,
 .cl-theme-toggle:hover {
-  border-color: var(--accent);
+  border-color: var(--accent-hover);
+  background: var(--surface-alt);
 }
 
 @media (max-width: 620px) {

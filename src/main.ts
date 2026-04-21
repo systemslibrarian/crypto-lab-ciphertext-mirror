@@ -28,6 +28,29 @@ const footer = renderFooter()
 page.append(header, main, footer)
 root.append(page)
 
+function setupThemeToggle(): void {
+  const toggle = header.querySelector<HTMLButtonElement>('.cl-theme-toggle')
+  if (!toggle) {
+    return
+  }
+
+  const sync = (): void => {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
+    toggle.textContent = isDark ? '🌙' : '☀️'
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode')
+  }
+
+  toggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
+    const next = current === 'dark' ? 'light' : 'dark'
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('theme', next)
+    sync()
+  })
+
+  sync()
+}
+
 function currentCard(): CardSlug | null {
   const params = new URLSearchParams(window.location.search)
   const card = params.get('card')
@@ -81,4 +104,5 @@ function render(): void {
 }
 
 window.addEventListener('popstate', render)
+setupThemeToggle()
 render()
