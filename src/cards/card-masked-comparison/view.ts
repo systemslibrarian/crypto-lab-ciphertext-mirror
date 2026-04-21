@@ -44,6 +44,19 @@ function summarizeMaskedRun(runA: Record<0 | 1 | 2 | 3, number>, runB: Record<0 
   return 'Summary: Run A and Run B are close overall, with only minor differences across masking orders.'
 }
 
+function suggestNextMaskedStep(runA: Record<0 | 1 | 2 | 3, number>, sigmaValue: number, hasCompare: boolean): string {
+  const avgA = ORDERS.reduce<number>((acc, order) => acc + runA[order], 0) / ORDERS.length
+  if (avgA >= WEAK_SIGNAL_THRESHOLD) {
+    return hasCompare
+      ? 'Try lowering both sigma sliders (for example 0.20 and 0.60) to force a clearer separation between Run A and Run B.'
+      : 'Try lowering sigma or changing seed to look for a clearer non-flat trend in the replay window.'
+  }
+  if (!hasCompare) {
+    return `Enable Run A vs Run B comparison and set a higher second sigma than ${sigmaValue.toFixed(2)} to see directionality more clearly.`
+  }
+  return 'Change one parameter at a time (seed or sigma) and rerun to isolate which setting shifts distinguishability.'
+}
+
 export function renderMaskedComparisonCardView(): HTMLElement {
   const card = document.createElement('section')
   card.className = 'card-shell'
@@ -209,7 +222,31 @@ export function renderMaskedComparisonCardView(): HTMLElement {
     heading.textContent = compareMode ? 'Simulation Output: Run A vs Run B' : 'Simulation Output'
     panes.append(heading)
 
-    runSummary.textContent = summarizeMaskedRun(result.tracesNeeded95, compareResult?.tracesNeeded95 ?? null)
+    const summaryText = summarizeMaskedRun(result.tracesNeeded95, compareResult?.tracesNeeded95 ?? null)
+    runSummary.textContent = summaryText
+
+    const resultOverview = document.createElement('section')
+    resultOverview.className = 'output-overview'
+    const averageA = ORDERS.reduce<number>((acc, order) => acc + result.tracesNeeded95[order], 0) / ORDERS.length
+    const averageB = compareResult
+      ? ORDERS.reduce<number>((acc, order) => acc + compareResult.tracesNeeded95[order], 0) / ORDERS.length
+      : null
+    const verdict = document.createElement('p')
+    verdict.className = 'run-summary'
+    verdict.textContent = `What happened: ${summaryText.replace(/^Summary:\s*/, '')}`
+
+    const runMetrics = document.createElement('p')
+    runMetrics.className = 'run-status'
+    runMetrics.textContent = averageB === null
+      ? `Average 95% estimate across d=0..3: Run A ${formatTraceEstimate(averageA)}.`
+      : `Average 95% estimate across d=0..3: Run A ${formatTraceEstimate(averageA)} | Run B ${formatTraceEstimate(averageB)}.`
+
+    const nextStep = document.createElement('p')
+    nextStep.className = 'run-status'
+    nextStep.textContent = `Try next: ${suggestNextMaskedStep(result.tracesNeeded95, sigma, compareMode)}`
+
+    resultOverview.append(verdict, runMetrics, nextStep)
+    panes.append(resultOverview)
 
     ORDERS.forEach((order) => {
       const pane = document.createElement('section')

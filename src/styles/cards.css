@@ -197,6 +197,11 @@
   color: var(--text);
 }
 
+.output-overview {
+  display: grid;
+  gap: 0.35rem;
+}
+
 .card-head {
   display: flex;
   justify-content: space-between;
