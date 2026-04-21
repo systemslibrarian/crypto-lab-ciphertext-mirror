@@ -36,6 +36,18 @@ No environment variables are required.
 
 One of 60+ live browser demos at [systemslibrarian.github.io/crypto-lab](https://systemslibrarian.github.io/crypto-lab/) — spanning Atbash (600 BCE) through NIST FIPS 203/204/205 (2024).
 
+### Reality & Limitations
+
+- This repository is a didactic mirror with seeded synthetic leakage and oracle abstractions.
+- It does not claim exploit success rates, trace budgets, or break costs on physical devices.
+- Paper-specific math and implementation details are summarized at mechanism level, not fully reproduced.
+
+## Why this demo is trustworthy
+
+- Every card includes a paper citation, a simulation mapping, and an explicit omission list.
+- The code is inspectable TypeScript with deterministic seeds for reproducible replay behavior.
+- The UI intentionally separates evidence from interpretation and from non-claims.
+
 ---
 
 *"Whether you eat or drink, or whatever you do, do all to the glory of God." — 1 Corinthians 10:31*

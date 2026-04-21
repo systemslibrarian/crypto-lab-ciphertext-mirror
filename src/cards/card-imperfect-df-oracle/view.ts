@@ -1,3 +1,5 @@
+import { renderInterpretationBlock } from '../../components/InterpretationBlock'
+import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
@@ -85,9 +87,52 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   run.textContent = 'Run oracle replay'
 
   const chartMount = document.createElement('div')
+  chartMount.className = 'output-block'
+  const chartTitle = document.createElement('h3')
+  chartTitle.className = 'card-section-title'
+  chartTitle.textContent = 'Simulation Output: Recovered Components Over Queries'
+  chartMount.append(chartTitle)
+
   const nodeMount = document.createElement('div')
+  nodeMount.className = 'output-block'
   nodeMount.style.display = 'grid'
   nodeMount.style.gap = '0.4rem'
+
+  const nodeTitle = document.createElement('h3')
+  nodeTitle.className = 'card-section-title'
+  nodeTitle.textContent = 'Simulation Output: Node Confidence Snapshot'
+  nodeMount.append(nodeTitle)
+
+  const chartInterpretation = renderInterpretationBlock({
+    whatSeeing:
+      'The curve tracks how many secret components are recovered as oracle queries accumulate under selected error and availability settings.',
+    parameterChange:
+      'Increasing oracle error rate or decreasing availability generally slows convergence and flattens the recovery curve.',
+    whyMatters:
+      'It demonstrates the core paper intuition that imperfect feedback can still leak actionable information in aggregate.',
+    notProve:
+      'It does not establish end-to-end key recovery cost on a specific implementation or a practical attack timeline.',
+  })
+
+  const nodeInterpretation = renderInterpretationBlock({
+    whatSeeing:
+      'Each cell is a variable confidence proxy after the replay, with brighter cells indicating higher inferred confidence.',
+    parameterChange:
+      'Cleaner oracle responses increase confidence uniformity; noisier conditions produce patchy, lower-confidence regions.',
+    whyMatters:
+      'The strip helps visualize whether uncertainty is globally reduced or concentrated in a few components.',
+    notProve:
+      'These confidence values are synthetic and not calibrated to a concrete decoder implementation in the paper.',
+  })
+
+  const mapping = renderPaperMapping({
+    paperClaim:
+      'Hybrid adaptive/LDPC-style strategies can leverage imperfect decryption-failure oracles against ML-KEM-style targets.',
+    demoModels:
+      'Seeded imperfect oracle responses with explicit error-rate and availability parameters, plus convergence telemetry.',
+    demoOmits:
+      'Exact parity-check construction, full decoding internals, and implementation-level timing effects.',
+  })
 
   run.addEventListener('click', () => {
     run.disabled = true
@@ -96,14 +141,24 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
     const result = runDfOracleSim(`${seed}:${level}`, pErr, alpha, budget)
     chartMount.innerHTML = ''
     nodeMount.innerHTML = ''
-    chartMount.append(renderTraceViewer(result.recoveredOverQueries, 'var(--mirror-cloud)'))
-    nodeMount.append(renderNodeStrip(result.variables.map((v) => v.confidence)))
+    chartMount.append(chartTitle, renderTraceViewer(result.recoveredOverQueries, 'var(--mirror-cloud)'))
+    nodeMount.append(nodeTitle, renderNodeStrip(result.variables.map((v) => v.confidence)))
     run.disabled = false
     run.textContent = 'Run oracle replay'
   })
 
   setup.append(seedInput, pErrInput, alphaInput, run)
 
-  card.append(head, setup, renderMirror('clouded'), chartMount, nodeMount, renderRealityPanel(imperfectDfReality))
+  card.append(
+    head,
+    setup,
+    renderMirror('clouded'),
+    chartMount,
+    chartInterpretation,
+    nodeMount,
+    nodeInterpretation,
+    mapping,
+    renderRealityPanel(imperfectDfReality),
+  )
   return card
 }

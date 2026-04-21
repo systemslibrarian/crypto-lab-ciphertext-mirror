@@ -1,3 +1,5 @@
+import { renderInterpretationBlock } from '../../components/InterpretationBlock'
+import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
@@ -30,8 +32,10 @@ export function renderMaskedComparisonCardView(): HTMLElement {
   setup.className = 'card-setup'
   let level: MlKemLevel = 512
   let sigma = 0.6
+  let sigmaCompare = 1.2
   let seed = 'mirror-card-1'
   let bitIndex = 0
+  let compareMode = false
 
   setup.append(renderParamSelector(level, (next) => { level = next }))
 
@@ -70,9 +74,51 @@ export function renderMaskedComparisonCardView(): HTMLElement {
   run.className = 'open-btn'
   run.textContent = 'Run leakage replay'
 
+  const compareWrap = document.createElement('label')
+  const compareToggle = document.createElement('input')
+  compareToggle.type = 'checkbox'
+  compareToggle.addEventListener('change', () => {
+    compareMode = compareToggle.checked
+    sigmaCompareInput.disabled = !compareMode
+  })
+  compareWrap.append(compareToggle, document.createTextNode('Enable Run A vs Run B comparison'))
+
+  const sigmaCompareInput = document.createElement('input')
+  sigmaCompareInput.type = 'range'
+  sigmaCompareInput.min = '0'
+  sigmaCompareInput.max = '2'
+  sigmaCompareInput.step = '0.05'
+  sigmaCompareInput.value = String(sigmaCompare)
+  sigmaCompareInput.disabled = true
+  sigmaCompareInput.setAttribute('aria-label', 'Comparison noise sigma')
+  sigmaCompareInput.addEventListener('input', () => {
+    sigmaCompare = Number(sigmaCompareInput.value)
+  })
+
   const panes = document.createElement('div')
   panes.style.display = 'grid'
   panes.style.gap = '0.75rem'
+  panes.className = 'output-block'
+
+  const chartInterpretation = renderInterpretationBlock({
+    whatSeeing:
+      'Each panel plots correlation progression for masking orders d=0..3 from synthetic leakage traces during the replayed FO comparison path.',
+    parameterChange:
+      'Higher sigma generally suppresses correlation peaks and increases estimated traces needed for confidence; lower sigma does the opposite.',
+    whyMatters:
+      'This mirrors the paper theme that masking order alone does not remove exploitable structure when enough observations are accumulated.',
+    notProve:
+      'These curves do not prove real-device exploitability, trace counts, or concrete break cost on hardware implementations.',
+  })
+
+  const mapping = renderPaperMapping({
+    paperClaim:
+      'Higher-order masking of FO comparison can still leak under realistic side-channel observation assumptions.',
+    demoModels:
+      'Seeded synthetic leakage with configurable Gaussian noise and order-based comparison replay over repeated traces.',
+    demoOmits:
+      'Real power/EM captures, alignment complexities, and hardware-specific pipeline effects.',
+  })
 
   const mirrorMount = renderMirror('cracked')
 
@@ -80,20 +126,45 @@ export function renderMaskedComparisonCardView(): HTMLElement {
     run.disabled = true
     run.textContent = 'Running...'
     const result = await runMaskedComparisonSim(level, seed, sigma, bitIndex)
+    const compareResult = compareMode
+      ? await runMaskedComparisonSim(level, `${seed}:compare`, sigmaCompare, bitIndex)
+      : null
     panes.innerHTML = ''
+
+    const heading = document.createElement('h3')
+    heading.className = 'card-section-title'
+    heading.textContent = compareMode ? 'Simulation Output: Run A vs Run B' : 'Simulation Output'
+    panes.append(heading)
+
     ;([0, 1, 2, 3] as const).forEach((order) => {
       const pane = document.createElement('section')
+      pane.style.display = 'grid'
+      pane.style.gridTemplateColumns = compareResult ? 'repeat(2, minmax(0, 1fr))' : '1fr'
+      pane.style.gap = '0.6rem'
+
       const title = document.createElement('h3')
-      title.textContent = `d=${order} | traces for 95% confidence: ${result.tracesNeeded95[order]}`
-      pane.append(title, renderTraceViewer(result.curves[order], order === 0 ? 'var(--mirror-crack)' : 'var(--mirror-glow)'))
-      panes.append(pane)
+      title.textContent = `d=${order}`
+
+      const runA = document.createElement('div')
+      runA.innerHTML = `<p>Run A (sigma=${sigma.toFixed(2)}): traces for 95% confidence ${result.tracesNeeded95[order]}</p>`
+      runA.append(renderTraceViewer(result.curves[order], order === 0 ? 'var(--mirror-crack)' : 'var(--mirror-glow)'))
+      pane.append(runA)
+
+      if (compareResult) {
+        const runB = document.createElement('div')
+        runB.innerHTML = `<p>Run B (sigma=${sigmaCompare.toFixed(2)}): traces for 95% confidence ${compareResult.tracesNeeded95[order]}</p>`
+        runB.append(renderTraceViewer(compareResult.curves[order], 'var(--warning)'))
+        pane.append(runB)
+      }
+
+      panes.append(title, pane)
     })
     run.disabled = false
     run.textContent = 'Run leakage replay'
   })
 
-  setup.append(seedInput, sigmaInput, bitInput, run)
+  setup.append(seedInput, sigmaInput, sigmaCompareInput, bitInput, compareWrap, run)
 
-  card.append(head, setup, mirrorMount, panes, renderRealityPanel(maskedComparisonReality))
+  card.append(head, setup, mirrorMount, panes, chartInterpretation, mapping, renderRealityPanel(maskedComparisonReality))
   return card
 }

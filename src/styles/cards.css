@@ -63,6 +63,19 @@
   gap: 1rem;
 }
 
+.card-section-title {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.output-block {
+  border: 1px solid var(--border-color);
+  border-radius: 0.8rem;
+  padding: 0.85rem;
+  background: color-mix(in oklab, var(--surface) 88%, var(--surface-alt));
+}
+
 .card-head {
   display: flex;
   justify-content: space-between;
@@ -92,12 +105,25 @@
   padding-top: 0.8rem;
 }
 
+.interpretation-block,
+.paper-mapping {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.8rem;
+}
+
 .reality-panel h4 {
   margin-bottom: 0.4rem;
 }
 
+.interpretation-block h4,
+.paper-mapping h4 {
+  margin: 0.6rem 0 0.35rem;
+}
+
 .reality-panel p,
-.reality-panel li {
+.reality-panel li,
+.interpretation-block p,
+.paper-mapping p {
   color: var(--text-muted);
 }
 
