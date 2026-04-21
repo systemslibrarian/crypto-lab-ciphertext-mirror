@@ -46,7 +46,7 @@ This repository is a pedagogical replay and visualization project, not an attack
 
 ## Live demo
 
-- Placeholder: add GitHub Pages/Netlify URL after deploy
+- https://systemslibrarian.github.io/crypto-lab-ciphertext-mirror/
 
 ## BibTeX-style citations
 
