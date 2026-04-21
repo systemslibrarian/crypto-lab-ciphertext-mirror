@@ -54,13 +54,17 @@ const cards: CardInfo[] = [
   },
 ]
 
-export function renderCardGrid(onOpen: (slug: CardSlug) => void): HTMLElement {
+export function renderCardGrid(onOpen: (slug: CardSlug) => void, selected?: CardSlug | null): HTMLElement {
   const section = document.createElement('section')
   section.className = 'card-grid'
 
   cards.forEach((card) => {
     const article = document.createElement('article')
     article.className = 'paper-card'
+    article.setAttribute('data-card', card.slug)
+    if (selected === card.slug) {
+      article.classList.add('paper-card-active')
+    }
 
     const mirror = renderMirror(card.mirror)
     const badge = renderScholarBadge(card.scholar)
@@ -74,7 +78,19 @@ export function renderCardGrid(onOpen: (slug: CardSlug) => void): HTMLElement {
     button.textContent = 'Open replay'
     button.addEventListener('click', () => onOpen(card.slug))
 
-    article.append(title, hook, mirror, badge, button)
+    const top = document.createElement('div')
+    top.className = 'paper-card-top'
+    top.append(title, hook)
+
+    const meta = document.createElement('div')
+    meta.className = 'paper-card-meta'
+    meta.append(badge)
+
+    const actions = document.createElement('div')
+    actions.className = 'paper-card-actions'
+    actions.append(button)
+
+    article.append(top, mirror, meta, actions)
     section.append(article)
   })
 

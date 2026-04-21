@@ -21,6 +21,14 @@ https://systemslibrarian.github.io/crypto-lab-ciphertext-mirror/
 
 The live demo lets you open three paper-driven card replays and run simulations directly in the browser. You can change controls such as ML-KEM level, seeded run value, noise sigma, oracle error rate, and oracle availability, then observe the resulting charts and mirror-state visuals. The interface models encapsulation/decapsulation behavior and replay metrics for comparison, but it is not a deployment attack tool.
 
+Replay workflow highlights:
+
+- Selecting `Open replay` highlights the chosen paper and moves focus to a replay workspace with paper title, citation, and scope summary.
+- Replay runs expose visible execution state (sampling, confidence estimation, and result preparation) before output is shown.
+- Each output includes a structured interpretation layer and an explicit limitation statement, not only raw traces or status labels.
+- A compact paper-to-demo mapping is included per replay (`Paper claim`, `This demo models`, `This demo omits`).
+- Comparison views are available where applicable: Run A vs Run B in masked comparison and unblinded vs blinded A/B in the blinding replay.
+
 ## 4. How to Run Locally
 
 ```bash

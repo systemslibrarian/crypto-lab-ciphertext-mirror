@@ -1,6 +1,7 @@
 import { renderInterpretationBlock } from '../../components/InterpretationBlock'
 import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
+import { renderProgressBar } from '../../components/ProgressBar'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
 import { renderTraceViewer } from '../../components/TraceViewer'
@@ -100,6 +101,14 @@ export function renderMaskedComparisonCardView(): HTMLElement {
   panes.style.gap = '0.75rem'
   panes.className = 'output-block'
 
+  const runStatus = document.createElement('p')
+  runStatus.className = 'run-status'
+  runStatus.textContent = 'Ready to run.'
+
+  const progressMount = document.createElement('div')
+  progressMount.className = 'output-block'
+  progressMount.append(renderProgressBar(0, 3))
+
   const chartInterpretation = renderInterpretationBlock({
     whatSeeing:
       'Each panel plots correlation progression for masking orders d=0..3 from synthetic leakage traces during the replayed FO comparison path.',
@@ -124,7 +133,24 @@ export function renderMaskedComparisonCardView(): HTMLElement {
 
   run.addEventListener('click', async () => {
     run.disabled = true
-    run.textContent = 'Running...'
+    seedInput.disabled = true
+    sigmaInput.disabled = true
+    bitInput.disabled = true
+    compareToggle.disabled = true
+    sigmaCompareInput.disabled = true
+    panes.classList.add('is-running')
+    run.textContent = 'Running replay...'
+
+    const stages = ['Sampling traces...', 'Estimating confidence...', 'Preparing replay results...']
+    for (let index = 0; index < stages.length; index += 1) {
+      runStatus.textContent = stages[index] ?? 'Running...'
+      progressMount.innerHTML = ''
+      progressMount.append(renderProgressBar(index + 1, stages.length))
+      await new Promise<void>((resolve) => {
+        window.setTimeout(() => resolve(), 120)
+      })
+    }
+
     const result = await runMaskedComparisonSim(level, seed, sigma, bitIndex)
     const compareResult = compareMode
       ? await runMaskedComparisonSim(level, `${seed}:compare`, sigmaCompare, bitIndex)
@@ -138,6 +164,7 @@ export function renderMaskedComparisonCardView(): HTMLElement {
 
     ;([0, 1, 2, 3] as const).forEach((order) => {
       const pane = document.createElement('section')
+      pane.className = 'compare-pane'
       pane.style.display = 'grid'
       pane.style.gridTemplateColumns = compareResult ? 'repeat(2, minmax(0, 1fr))' : '1fr'
       pane.style.gap = '0.6rem'
@@ -155,16 +182,37 @@ export function renderMaskedComparisonCardView(): HTMLElement {
         runB.innerHTML = `<p>Run B (sigma=${sigmaCompare.toFixed(2)}): traces for 95% confidence ${compareResult.tracesNeeded95[order]}</p>`
         runB.append(renderTraceViewer(compareResult.curves[order], 'var(--warning)'))
         pane.append(runB)
+
+        const comparison = document.createElement('p')
+        const delta = compareResult.tracesNeeded95[order] - result.tracesNeeded95[order]
+        if (delta > 0) {
+          comparison.textContent = `Comparison: Run B needs ${delta} more traces than Run A at d=${order}.`
+        } else if (delta < 0) {
+          comparison.textContent = `Comparison: Run B needs ${Math.abs(delta)} fewer traces than Run A at d=${order}.`
+        } else {
+          comparison.textContent = `Comparison: Run A and Run B have the same 95% trace estimate at d=${order}.`
+        }
+        comparison.className = 'run-status'
+        panes.append(title, pane, comparison)
+        return
       }
 
       panes.append(title, pane)
     })
+
+    panes.classList.remove('is-running')
+    runStatus.textContent = 'Replay complete.'
+    seedInput.disabled = false
+    sigmaInput.disabled = false
+    bitInput.disabled = false
+    compareToggle.disabled = false
+    sigmaCompareInput.disabled = !compareMode
     run.disabled = false
     run.textContent = 'Run leakage replay'
   })
 
   setup.append(seedInput, sigmaInput, sigmaCompareInput, bitInput, compareWrap, run)
 
-  card.append(head, setup, mirrorMount, panes, chartInterpretation, mapping, renderRealityPanel(maskedComparisonReality))
+  card.append(head, setup, runStatus, progressMount, mirrorMount, panes, chartInterpretation, mapping, renderRealityPanel(maskedComparisonReality))
   return card
 }

@@ -1,6 +1,7 @@
 import { renderInterpretationBlock } from '../../components/InterpretationBlock'
 import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
+import { renderProgressBar } from '../../components/ProgressBar'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
 import { renderTraceViewer } from '../../components/TraceViewer'
@@ -68,6 +69,14 @@ export function renderRnrBlindingCardView(): HTMLElement {
   run.className = 'open-btn'
   run.textContent = 'Run blinding replay'
 
+  const runStatus = document.createElement('p')
+  runStatus.className = 'run-status'
+  runStatus.textContent = 'Ready to run.'
+
+  const progressMount = document.createElement('div')
+  progressMount.className = 'output-block'
+  progressMount.append(renderProgressBar(0, 3))
+
   const compare = document.createElement('div')
   compare.className = 'output-block'
   compare.style.display = 'grid'
@@ -77,6 +86,10 @@ export function renderRnrBlindingCardView(): HTMLElement {
   const outputRow = document.createElement('p')
   outputRow.className = 'output-block'
   outputRow.textContent = 'shared secret status: pending'
+
+  const comparisonSummary = document.createElement('p')
+  comparisonSummary.className = 'run-status'
+  comparisonSummary.textContent = 'Comparison summary appears after a run.'
 
   const compareTitle = document.createElement('h3')
   compareTitle.className = 'card-section-title'
@@ -114,23 +127,48 @@ export function renderRnrBlindingCardView(): HTMLElement {
       'Hardware fault model fidelity, exact instruction-level countermeasures, and complete performance overhead analysis.',
   })
 
-  run.addEventListener('click', () => {
+  run.addEventListener('click', async () => {
     run.disabled = true
-    run.textContent = 'Running...'
+    seedInput.disabled = true
+    sigmaInput.disabled = true
+    faultToggle.disabled = true
+    compare.classList.add('is-running')
+    run.textContent = 'Running replay...'
+
+    const stages = ['Sampling traces...', 'Estimating confidence...', 'Preparing replay results...']
+    for (let index = 0; index < stages.length; index += 1) {
+      runStatus.textContent = stages[index] ?? 'Running...'
+      progressMount.innerHTML = ''
+      progressMount.append(renderProgressBar(index + 1, stages.length))
+      await new Promise<void>((resolve) => {
+        window.setTimeout(() => resolve(), 120)
+      })
+    }
+
     const result = runBlindingSim(`${seed}:${level}`, sigma, injectFault)
     compare.innerHTML = ''
     compare.append(compareTitle)
 
     const left = document.createElement('section')
-    left.innerHTML = '<h3>Unblinded</h3>'
+    left.innerHTML = '<h3>Run A - Unblinded</h3>'
     left.append(renderMirror('cracked'), renderTraceViewer(result.unblindedCorrelation, 'var(--mirror-crack)'))
 
     const right = document.createElement('section')
-    right.innerHTML = '<h3>Blinded</h3>'
+    right.innerHTML = '<h3>Run B - Blinded</h3>'
     right.append(renderMirror('hardened'), renderTraceViewer(result.blindedCorrelation, 'var(--success)'))
 
     compare.append(left, right)
     outputRow.textContent = `Unblinded: ${result.unblindedState} | Blinded: ${result.blindedState}`
+    comparisonSummary.textContent =
+      result.blindedState === 'ABORT'
+        ? 'Comparison: fault detection triggers an abort on the blinded branch while the unblinded branch shows tampered state.'
+        : 'Comparison: with matched seed and noise, the blinded branch remains in stable state while presenting reduced-amplitude leakage.'
+
+    compare.classList.remove('is-running')
+    runStatus.textContent = 'Replay complete.'
+    seedInput.disabled = false
+    sigmaInput.disabled = false
+    faultToggle.disabled = false
     run.disabled = false
     run.textContent = 'Run blinding replay'
   })
@@ -139,7 +177,10 @@ export function renderRnrBlindingCardView(): HTMLElement {
   card.append(
     head,
     setup,
+    runStatus,
+    progressMount,
     compare,
+    comparisonSummary,
     compareInterpretation,
     outputRow,
     statusInterpretation,

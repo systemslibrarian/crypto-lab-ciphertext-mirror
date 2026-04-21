@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1rem;
+  align-items: stretch;
 }
 
 .paper-card {
@@ -10,15 +11,45 @@
   border-radius: 0.9rem;
   padding: 1rem;
   position: relative;
-  min-height: 220px;
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  gap: 0.8rem;
+  min-height: 100%;
+}
+
+.paper-card-top {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.paper-card-meta {
+  min-height: 2rem;
+}
+
+.paper-card-actions {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+}
+
+.paper-card .mirror-wrap {
+  min-height: 176px;
+  align-content: center;
 }
 
 .paper-card h2 {
-  margin-top: 0;
+  margin: 0;
 }
 
 .paper-card p {
   color: var(--text-muted);
+  margin: 0;
+}
+
+.paper-card-active {
+  border-color: color-mix(in oklab, var(--accent) 70%, var(--border-color));
+  background: color-mix(in oklab, var(--surface) 88%, var(--accent));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
 }
 
 .scholar-badge {
@@ -63,6 +94,66 @@
   gap: 1rem;
 }
 
+.landing-shell {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.landing-title {
+  margin: 0;
+}
+
+.landing-hint {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.replay-lab {
+  margin-top: 1.1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--surface) 90%, var(--surface-alt));
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.replay-header {
+  border: 1px solid var(--border-color);
+  border-radius: 0.8rem;
+  background: var(--surface);
+  padding: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.replay-title-block h2 {
+  margin: 0 0 0.4rem;
+}
+
+.replay-title-block p {
+  margin: 0.22rem 0;
+  color: var(--text-muted);
+}
+
+.replay-kicker {
+  color: var(--accent) !important;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.replay-citation {
+  font-weight: 600;
+  color: var(--text) !important;
+}
+
+.replay-close-btn {
+  flex-shrink: 0;
+}
+
 .card-section-title {
   margin: 0;
   font-size: 1rem;
@@ -74,6 +165,17 @@
   border-radius: 0.8rem;
   padding: 0.85rem;
   background: color-mix(in oklab, var(--surface) 88%, var(--surface-alt));
+}
+
+.output-block.is-running {
+  border-color: color-mix(in oklab, var(--accent) 70%, var(--border-color));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.run-status {
+  margin: 0;
+  color: var(--text-muted);
+  min-height: 1.2rem;
 }
 
 .card-head {
@@ -154,6 +256,16 @@
   }
 
   .open-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .replay-header {
+    flex-direction: column;
+  }
+
+  .replay-close-btn {
     width: 100%;
   }
 }

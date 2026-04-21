@@ -1,6 +1,7 @@
 import { renderInterpretationBlock } from '../../components/InterpretationBlock'
 import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
+import { renderProgressBar } from '../../components/ProgressBar'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
 import { renderTraceViewer } from '../../components/TraceViewer'
@@ -86,6 +87,14 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   run.className = 'open-btn'
   run.textContent = 'Run oracle replay'
 
+  const runStatus = document.createElement('p')
+  runStatus.className = 'run-status'
+  runStatus.textContent = 'Ready to run.'
+
+  const progressMount = document.createElement('div')
+  progressMount.className = 'output-block'
+  progressMount.append(renderProgressBar(0, 3))
+
   const chartMount = document.createElement('div')
   chartMount.className = 'output-block'
   const chartTitle = document.createElement('h3')
@@ -134,15 +143,38 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
       'Exact parity-check construction, full decoding internals, and implementation-level timing effects.',
   })
 
-  run.addEventListener('click', () => {
+  run.addEventListener('click', async () => {
     run.disabled = true
-    run.textContent = 'Running...'
+    seedInput.disabled = true
+    pErrInput.disabled = true
+    alphaInput.disabled = true
+    chartMount.classList.add('is-running')
+    nodeMount.classList.add('is-running')
+    run.textContent = 'Running replay...'
+
+    const stages = ['Sampling traces...', 'Estimating confidence...', 'Preparing replay results...']
+    for (let index = 0; index < stages.length; index += 1) {
+      runStatus.textContent = stages[index] ?? 'Running...'
+      progressMount.innerHTML = ''
+      progressMount.append(renderProgressBar(index + 1, stages.length))
+      await new Promise<void>((resolve) => {
+        window.setTimeout(() => resolve(), 120)
+      })
+    }
+
     const budget = level === 1024 ? 240 : 180
     const result = runDfOracleSim(`${seed}:${level}`, pErr, alpha, budget)
     chartMount.innerHTML = ''
     nodeMount.innerHTML = ''
     chartMount.append(chartTitle, renderTraceViewer(result.recoveredOverQueries, 'var(--mirror-cloud)'))
     nodeMount.append(nodeTitle, renderNodeStrip(result.variables.map((v) => v.confidence)))
+
+    chartMount.classList.remove('is-running')
+    nodeMount.classList.remove('is-running')
+    runStatus.textContent = 'Replay complete.'
+    seedInput.disabled = false
+    pErrInput.disabled = false
+    alphaInput.disabled = false
     run.disabled = false
     run.textContent = 'Run oracle replay'
   })
@@ -152,6 +184,8 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   card.append(
     head,
     setup,
+    runStatus,
+    progressMount,
     renderMirror('clouded'),
     chartMount,
     chartInterpretation,
