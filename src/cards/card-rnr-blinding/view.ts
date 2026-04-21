@@ -5,31 +5,60 @@ import { renderProgressBar } from '../../components/ProgressBar'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
 import { renderTraceViewer } from '../../components/TraceViewer'
+import { renderVerdictBanner, type VerdictTone } from '../../components/VerdictBanner'
 import type { MlKemLevel } from '../../components/types'
-import { renderMirror } from '../../lib/viz/mirror'
 import { rnrBlindingReality } from './reality'
 import { runBlindingSim } from './sim'
 
 function meanAbs(values: number[]): number {
-  if (values.length === 0) {
-    return 0
-  }
-  const total = values.reduce((acc, value) => acc + Math.abs(value), 0)
-  return total / values.length
+  if (values.length === 0) return 0
+  return values.reduce((acc, v) => acc + Math.abs(v), 0) / values.length
 }
 
-function summarizeBlindingRun(unblinded: number[], blinded: number[], unblindedState: string, blindedState: string): string {
-  const unblindedMean = meanAbs(unblinded)
-  const blindedMean = meanAbs(blinded)
-  const ratio = unblindedMean <= 1e-9 ? 1 : blindedMean / unblindedMean
+type Verdict = { tone: VerdictTone; headline: string; detail: string; nextStep: string }
 
-  if (blindedState === 'ABORT') {
-    return `Summary: blinded branch aborted on integrity check while unblinded branch reported ${unblindedState}, showing the fault-detection path in action.`
+function verdictForBlinding(
+  unblinded: number[],
+  blinded: number[],
+  unblindedState: string,
+  blindedState: string,
+  fault: boolean,
+): Verdict {
+  const ua = meanAbs(unblinded)
+  const ba = meanAbs(blinded)
+  const ratio = ua > 1e-9 ? ba / ua : 1
+  const reduction = ratio < 1 ? `${Math.round((1 - ratio) * 100)}% lower amplitude` : `${ratio.toFixed(2)}× amplitude`
+
+  if (fault && blindedState === 'ABORT' && unblindedState !== 'ABORT') {
+    return {
+      tone: 'good',
+      headline: 'Blinding caught the fault — unblinded path tampered, blinded path aborted',
+      detail: `Run B aborted on the integrity check while Run A returned ${unblindedState}, exactly the asymmetry the paper highlights.`,
+      nextStep: 'Disable fault injection and rerun to compare amplitude only, isolating the side-channel benefit.',
+    }
   }
-  if (ratio < 0.75) {
-    return `Summary: blinded waveform amplitude is lower than unblinded (relative mean ${ratio.toFixed(2)}), consistent with reduced visible leakage in this model.`
+  if (ratio < 0.6) {
+    return {
+      tone: 'good',
+      headline: `Blinded waveform is ${reduction} than unblinded`,
+      detail: `Run A → ${unblindedState}, Run B → ${blindedState}. The blinded branch suppresses the visible leakage envelope at this sigma.`,
+      nextStep: 'Raise sigma to test whether the gap survives heavier noise, or enable fault injection to stress integrity.',
+    }
   }
-  return `Summary: both waveforms are close in amplitude (relative mean ${ratio.toFixed(2)}); this run does not show a large visual separation.`
+  if (ratio < 0.9) {
+    return {
+      tone: 'warn',
+      headline: `Modest reduction — blinded is ${reduction} than unblinded`,
+      detail: `Run A → ${unblindedState}, Run B → ${blindedState}. The defense narrows the leakage but does not eliminate the trend.`,
+      nextStep: 'Try a different seed to confirm the trend isn\'t seed-specific, then sweep sigma.',
+    }
+  }
+  return {
+    tone: 'neutral',
+    headline: 'Both branches present similar amplitude in this run',
+    detail: `Run A → ${unblindedState}, Run B → ${blindedState}. Relative blinded/unblinded mean amplitude is ${ratio.toFixed(2)} — no clear visual separation here.`,
+    nextStep: 'Lower sigma so the unblinded path leaks more strongly and the contrast becomes visible.',
+  }
 }
 
 export function renderRnrBlindingCardView(): HTMLElement {
@@ -63,9 +92,7 @@ export function renderRnrBlindingCardView(): HTMLElement {
   const seedInput = document.createElement('input')
   seedInput.value = seed
   seedInput.setAttribute('aria-label', 'Simulation seed')
-  seedInput.addEventListener('input', () => {
-    seed = seedInput.value
-  })
+  seedInput.addEventListener('input', () => { seed = seedInput.value })
 
   const sigmaInput = document.createElement('input')
   sigmaInput.type = 'range'
@@ -74,16 +101,12 @@ export function renderRnrBlindingCardView(): HTMLElement {
   sigmaInput.step = '0.05'
   sigmaInput.value = String(sigma)
   sigmaInput.setAttribute('aria-label', 'Noise sigma')
-  sigmaInput.addEventListener('input', () => {
-    sigma = Number(sigmaInput.value)
-  })
+  sigmaInput.addEventListener('input', () => { sigma = Number(sigmaInput.value) })
 
   const faultWrap = document.createElement('label')
   const faultToggle = document.createElement('input')
   faultToggle.type = 'checkbox'
-  faultToggle.addEventListener('change', () => {
-    injectFault = faultToggle.checked
-  })
+  faultToggle.addEventListener('change', () => { injectFault = faultToggle.checked })
   faultWrap.append(faultToggle, document.createTextNode('Enable single-bit fault injection'))
 
   const run = document.createElement('button')
@@ -96,40 +119,19 @@ export function renderRnrBlindingCardView(): HTMLElement {
   runStatus.textContent = 'Ready to run.'
 
   const progressMount = document.createElement('div')
-  progressMount.className = 'output-block'
+  progressMount.className = 'output-block progress-mount'
   progressMount.append(renderProgressBar(0, 3))
 
-  const readingGuide = document.createElement('section')
-  readingGuide.className = 'output-block reading-guide'
-  readingGuide.innerHTML = `
-    <h3 class="card-section-title">How to read this output</h3>
-    <p>Run A is the unblinded path, and Run B is the blinded path under the same seed and sigma.</p>
-    <p>Compare waveform amplitude and final state labels together; neither panel alone is the full story.</p>
-    <p>If fault injection is enabled, an ABORT state on Run B indicates detection in this replay model.</p>
+  const placeholder = document.createElement('section')
+  placeholder.className = 'output-block output-placeholder'
+  placeholder.innerHTML = `
+    <h3 class="card-section-title">Replay output</h3>
+    <p>Click <strong>Run blinding replay</strong> to populate this panel. You'll see a verdict banner comparing both branches and the matched A/B correlation traces.</p>
   `
 
-  const runSummary = document.createElement('p')
-  runSummary.className = 'run-summary'
-  runSummary.textContent = 'Run summary appears after execution.'
-
-  const compare = document.createElement('div')
-  compare.className = 'output-block'
-  compare.style.display = 'grid'
-  compare.style.gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))'
-  compare.style.gap = '1rem'
-
-  const outputRow = document.createElement('p')
-  outputRow.className = 'output-block'
-  outputRow.textContent = 'shared secret status: pending'
-
-  const comparisonSummary = document.createElement('p')
-  comparisonSummary.className = 'run-status'
-  comparisonSummary.textContent = 'Comparison summary appears after a run.'
-
-  const compareTitle = document.createElement('h3')
-  compareTitle.className = 'card-section-title'
-  compareTitle.textContent = 'Simulation Output: Unblinded vs Blinded Correlation'
-  compare.append(compareTitle)
+  const resultMount = document.createElement('div')
+  resultMount.className = 'output-mount'
+  resultMount.append(placeholder)
 
   const compareInterpretation = renderInterpretationBlock({
     whatSeeing:
@@ -140,17 +142,6 @@ export function renderRnrBlindingCardView(): HTMLElement {
       'The side-by-side layout makes defense impact explicit instead of relying on absolute values from a single run.',
     notProve:
       'It does not prove formal masking security or implementation resistance on production hardware.',
-  })
-
-  const statusInterpretation = renderInterpretationBlock({
-    whatSeeing:
-      'The status line summarizes resulting shared-secret state labels for unblinded and blinded replay branches.',
-    parameterChange:
-      'Fault toggle and noise level can change whether either branch reports a degraded or stable state label.',
-    whyMatters:
-      'A compact textual status helps connect waveform intuition to high-level decapsulation outcome categories.',
-    notProve:
-      'State labels in this demo are pedagogical outputs and are not substitute metrics for full protocol security claims.',
   })
 
   const mapping = renderPaperMapping({
@@ -167,45 +158,71 @@ export function renderRnrBlindingCardView(): HTMLElement {
     seedInput.disabled = true
     sigmaInput.disabled = true
     faultToggle.disabled = true
-    compare.classList.add('is-running')
+    resultMount.classList.add('is-running')
     run.textContent = 'Running replay...'
 
-    const stages = ['Sampling traces...', 'Estimating confidence...', 'Preparing replay results...']
+    const stages = ['Running unblinded branch...', 'Running blinded branch...', 'Preparing replay results...']
     for (let index = 0; index < stages.length; index += 1) {
       runStatus.textContent = stages[index] ?? 'Running...'
       progressMount.innerHTML = ''
       progressMount.append(renderProgressBar(index + 1, stages.length))
-      await new Promise<void>((resolve) => {
-        window.setTimeout(() => resolve(), 120)
-      })
+      await new Promise<void>((resolve) => { window.setTimeout(() => resolve(), 120) })
     }
 
     const result = runBlindingSim(`${seed}:${level}`, sigma, injectFault)
-    compare.innerHTML = ''
-    compare.append(compareTitle)
+    const ua = meanAbs(result.unblindedCorrelation)
+    const ba = meanAbs(result.blindedCorrelation)
+    const ratio = ua > 1e-9 ? ba / ua : 1
 
-    const left = document.createElement('section')
-    left.innerHTML = '<h3>Run A - Unblinded</h3>'
-    left.append(renderMirror('cracked'), renderTraceViewer(result.unblindedCorrelation, 'var(--mirror-crack)'))
+    resultMount.innerHTML = ''
+    resultMount.classList.remove('is-running')
 
-    const right = document.createElement('section')
-    right.innerHTML = '<h3>Run B - Blinded</h3>'
-    right.append(renderMirror('hardened'), renderTraceViewer(result.blindedCorrelation, 'var(--success)'))
-
-    compare.append(left, right)
-    outputRow.textContent = `Unblinded: ${result.unblindedState} | Blinded: ${result.blindedState}`
-    runSummary.textContent = summarizeBlindingRun(
+    const verdict = verdictForBlinding(
       result.unblindedCorrelation,
       result.blindedCorrelation,
       result.unblindedState,
       result.blindedState,
+      injectFault,
     )
-    comparisonSummary.textContent =
-      result.blindedState === 'ABORT'
-        ? 'Comparison: fault detection triggers an abort on the blinded branch while the unblinded branch shows tampered state.'
-        : 'Comparison: with matched seed and noise, the blinded branch remains in stable state while presenting reduced-amplitude leakage.'
+    resultMount.append(renderVerdictBanner({
+      tone: verdict.tone,
+      headline: verdict.headline,
+      detail: verdict.detail,
+      metrics: [
+        { label: 'Run A state', value: result.unblindedState },
+        { label: 'Run B state', value: result.blindedState },
+        { label: 'Mean |corr| Run A', value: ua.toFixed(3) },
+        { label: 'Mean |corr| Run B', value: ba.toFixed(3) },
+        { label: 'B / A ratio', value: ratio.toFixed(2) },
+        { label: 'Sigma / fault', value: `${sigma.toFixed(2)} / ${injectFault ? 'on' : 'off'}` },
+      ],
+      nextStep: verdict.nextStep,
+    }))
 
-    compare.classList.remove('is-running')
+    const compare = document.createElement('section')
+    compare.className = 'output-block'
+    const compareTitle = document.createElement('h3')
+    compareTitle.className = 'card-section-title'
+    compareTitle.textContent = 'Unblinded vs blinded correlation (matched seed)'
+    compare.append(compareTitle)
+
+    const grid = document.createElement('div')
+    grid.style.display = 'grid'
+    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(260px, 1fr))'
+    grid.style.gap = '0.75rem'
+
+    const left = document.createElement('section')
+    left.className = 'compare-pane'
+    left.innerHTML = '<h4>Run A — Unblinded</h4>'
+    left.append(renderTraceViewer(result.unblindedCorrelation, 'var(--mirror-crack)'))
+    const right = document.createElement('section')
+    right.className = 'compare-pane'
+    right.innerHTML = '<h4>Run B — Blinded</h4>'
+    right.append(renderTraceViewer(result.blindedCorrelation, 'var(--success)'))
+    grid.append(left, right)
+    compare.append(grid)
+    resultMount.append(compare)
+
     runStatus.textContent = 'Replay complete.'
     seedInput.disabled = false
     sigmaInput.disabled = false
@@ -215,20 +232,7 @@ export function renderRnrBlindingCardView(): HTMLElement {
   })
 
   setup.append(seedInput, sigmaInput, faultWrap, run)
-  card.append(
-    head,
-    setup,
-    runStatus,
-    progressMount,
-    readingGuide,
-    runSummary,
-    compare,
-    comparisonSummary,
-    compareInterpretation,
-    outputRow,
-    statusInterpretation,
-    mapping,
-    renderRealityPanel(rnrBlindingReality),
-  )
+
+  card.append(head, setup, runStatus, progressMount, resultMount, compareInterpretation, mapping, renderRealityPanel(rnrBlindingReality))
   return card
 }

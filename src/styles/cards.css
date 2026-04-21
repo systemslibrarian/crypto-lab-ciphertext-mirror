@@ -202,6 +202,286 @@
   gap: 0.35rem;
 }
 
+.output-mount {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.output-mount.is-running {
+  opacity: 0.7;
+}
+
+.output-placeholder p {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+}
+
+.output-details {
+  padding: 0;
+}
+
+.output-details > summary {
+  cursor: pointer;
+  padding: 0.55rem 0.75rem;
+  font-weight: 600;
+  border-radius: 0.7rem;
+  list-style: none;
+}
+
+.output-details > summary::-webkit-details-marker { display: none; }
+
+.output-details > summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.4rem;
+  transition: transform 0.15s ease;
+}
+
+.output-details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.output-details[open] {
+  padding: 0.65rem;
+}
+
+/* Verdict banner */
+.verdict-banner {
+  border: 1px solid var(--border-color);
+  border-left-width: 6px;
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  display: grid;
+  gap: 0.55rem;
+  background: color-mix(in oklab, var(--surface) 85%, var(--surface-alt));
+}
+
+.verdict-banner.verdict-good {
+  border-left-color: var(--success);
+  background: color-mix(in oklab, var(--surface) 80%, var(--success) 10%);
+}
+
+.verdict-banner.verdict-warn {
+  border-left-color: var(--warning);
+  background: color-mix(in oklab, var(--surface) 80%, var(--warning) 12%);
+}
+
+.verdict-banner.verdict-bad {
+  border-left-color: var(--danger);
+  background: color-mix(in oklab, var(--surface) 80%, var(--danger) 12%);
+}
+
+.verdict-banner.verdict-floor {
+  border-left-color: var(--mirror-cloud);
+  background: color-mix(in oklab, var(--surface) 80%, var(--mirror-cloud) 14%);
+}
+
+.verdict-banner.verdict-neutral {
+  border-left-color: var(--accent);
+}
+
+.verdict-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.verdict-icon {
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--surface);
+  flex-shrink: 0;
+}
+
+.verdict-good .verdict-icon { background: var(--success); }
+.verdict-warn .verdict-icon { background: var(--warning); color: #1f1500; }
+.verdict-bad .verdict-icon { background: var(--danger); }
+.verdict-floor .verdict-icon { background: var(--mirror-cloud); color: #131a1d; }
+.verdict-neutral .verdict-icon { background: var(--accent); }
+
+.verdict-label {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.verdict-headline {
+  margin: 0.1rem 0 0;
+  font-size: 1.08rem;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.verdict-detail {
+  margin: 0;
+  color: var(--text);
+}
+
+.verdict-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem 0.9rem;
+  margin: 0.25rem 0 0;
+  padding: 0.55rem 0.65rem;
+  background: color-mix(in oklab, var(--surface) 90%, var(--surface-alt));
+  border-radius: 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--border-color) 70%, transparent);
+}
+
+.verdict-metrics dt {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.verdict-metrics dd {
+  margin: 0.1rem 0 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.verdict-next {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.55rem;
+  background: color-mix(in oklab, var(--surface-alt) 70%, var(--surface));
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+/* Bar chart */
+.bar-chart {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.bar-chart-unit {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.bar-chart-grid {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.bar-chart-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr minmax(8rem, auto);
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.bar-chart-label {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.bar-chart-track {
+  position: relative;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--surface-alt) 70%, var(--bg));
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--border-color) 60%, transparent);
+}
+
+.bar-chart-fill {
+  height: 100%;
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--accent) 70%, var(--surface-alt)),
+    color-mix(in oklab, var(--accent) 95%, var(--mirror-glow))
+  );
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+.bar-chart-row.is-highlight .bar-chart-fill {
+  background: linear-gradient(90deg, var(--mirror-crack), var(--warning));
+}
+
+.bar-chart-ref {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: color-mix(in oklab, var(--text-muted) 60%, transparent);
+  pointer-events: none;
+}
+
+.bar-chart-value {
+  display: grid;
+  gap: 0.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar-chart-value strong {
+  font-size: 0.95rem;
+}
+
+.bar-chart-caption {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.bar-chart-legend {
+  list-style: none;
+  margin: 0.1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.bar-chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.bar-chart-legend-tick {
+  display: inline-block;
+  width: 2px;
+  height: 0.85rem;
+  background: color-mix(in oklab, var(--text-muted) 60%, transparent);
+}
+
+/* Node strip (DF card) */
+.node-strip {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 0.22rem;
+}
+
+.node-strip-cell {
+  height: 0.85rem;
+  border-radius: 0.22rem;
+  border: 1px solid color-mix(in oklab, var(--border-color) 50%, transparent);
+}
+
+@media (max-width: 520px) {
+  .bar-chart-row {
+    grid-template-columns: 2rem 1fr;
+  }
+  .bar-chart-value {
+    grid-column: 2;
+    margin-top: 0.15rem;
+  }
+}
+
 .card-head {
   display: flex;
   justify-content: space-between;

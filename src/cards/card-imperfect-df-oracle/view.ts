@@ -5,34 +5,48 @@ import { renderProgressBar } from '../../components/ProgressBar'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
 import { renderTraceViewer } from '../../components/TraceViewer'
+import { renderVerdictBanner, type VerdictTone } from '../../components/VerdictBanner'
 import type { MlKemLevel } from '../../components/types'
-import { renderMirror } from '../../lib/viz/mirror'
 import { imperfectDfReality } from './reality'
 import { runDfOracleSim } from './sim'
 
-function summarizeDfRun(recoveredOverQueries: number[], confidence: number[], pErr: number, alpha: number): string {
-  const finalRecovered = recoveredOverQueries[recoveredOverQueries.length - 1] ?? 0
-  const avgConfidence = confidence.reduce((acc, value) => acc + value, 0) / Math.max(1, confidence.length)
+type Verdict = { tone: VerdictTone; headline: string; detail: string; nextStep: string }
 
-  if (finalRecovered >= 0.9) {
-    return `Summary: replay converged strongly (${(finalRecovered * 100).toFixed(1)}% recovered) with average confidence ${(avgConfidence * 100).toFixed(1)}%.`
+function verdictForDf(recovered: number, avgConfidence: number, pErr: number, alpha: number): Verdict {
+  const recPct = (recovered * 100).toFixed(1)
+  const confPct = (avgConfidence * 100).toFixed(1)
+  if (recovered >= 0.9) {
+    return {
+      tone: 'bad',
+      headline: `Oracle leaked the secret — ${recPct}% recovered`,
+      detail: `Even with error rate ${pErr.toFixed(2)} and availability ${alpha.toFixed(2)}, the adaptive replay drove recovery past 90% with average confidence ${confPct}%.`,
+      nextStep: 'Push pErr above 0.35 or drop availability below 0.20 to find the point where recovery stalls.',
+    }
   }
-  if (finalRecovered >= 0.7) {
-    return `Summary: replay converged partially (${(finalRecovered * 100).toFixed(1)}% recovered); error rate ${pErr.toFixed(2)} and availability ${alpha.toFixed(2)} still leave noticeable uncertainty.`
+  if (recovered >= 0.6) {
+    return {
+      tone: 'warn',
+      headline: `Partial recovery — ${recPct}% of components inferred`,
+      detail: `Recovery is incomplete (avg confidence ${confPct}%) but not flat. The hybrid LDPC step is still extracting structure even with imperfect feedback.`,
+      nextStep: 'Lower error rate to model a cleaner channel, or raise availability to confirm the trend goes monotonic.',
+    }
   }
-  return `Summary: replay stayed noisy (${(finalRecovered * 100).toFixed(1)}% recovered), so this setting does not yield strong component recovery in this budget.`
+  return {
+    tone: 'good',
+    headline: `Replay stalled — only ${recPct}% recovered`,
+    detail: `Avg confidence ${confPct}% means the noisy oracle (pErr=${pErr.toFixed(2)}, availability=${alpha.toFixed(2)}) did not concentrate enough signal in this query budget.`,
+    nextStep: 'Drop pErr below 0.10 or raise availability past 0.80 to see the convergence emerge.',
+  }
 }
 
 function renderNodeStrip(confidence: number[]): HTMLElement {
   const row = document.createElement('div')
-  row.style.display = 'grid'
-  row.style.gridTemplateColumns = 'repeat(16, minmax(0, 1fr))'
-  row.style.gap = '0.25rem'
+  row.className = 'node-strip'
   confidence.forEach((value) => {
     const cell = document.createElement('div')
-    cell.style.height = '0.8rem'
-    cell.style.borderRadius = '0.2rem'
+    cell.className = 'node-strip-cell'
     cell.style.background = `color-mix(in oklab, var(--success) ${Math.round(value * 100)}%, var(--surface-alt))`
+    cell.title = `confidence ${(value * 100).toFixed(1)}%`
     row.append(cell)
   })
   return row
@@ -69,9 +83,7 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   const seedInput = document.createElement('input')
   seedInput.value = seed
   seedInput.setAttribute('aria-label', 'Simulation seed')
-  seedInput.addEventListener('input', () => {
-    seed = seedInput.value
-  })
+  seedInput.addEventListener('input', () => { seed = seedInput.value })
 
   const pErrInput = document.createElement('input')
   pErrInput.type = 'range'
@@ -80,9 +92,7 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   pErrInput.step = '0.01'
   pErrInput.value = String(pErr)
   pErrInput.setAttribute('aria-label', 'Oracle error rate')
-  pErrInput.addEventListener('input', () => {
-    pErr = Number(pErrInput.value)
-  })
+  pErrInput.addEventListener('input', () => { pErr = Number(pErrInput.value) })
 
   const alphaInput = document.createElement('input')
   alphaInput.type = 'range'
@@ -91,9 +101,7 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   alphaInput.step = '0.01'
   alphaInput.value = String(alpha)
   alphaInput.setAttribute('aria-label', 'Oracle availability')
-  alphaInput.addEventListener('input', () => {
-    alpha = Number(alphaInput.value)
-  })
+  alphaInput.addEventListener('input', () => { alpha = Number(alphaInput.value) })
 
   const run = document.createElement('button')
   run.type = 'button'
@@ -105,38 +113,19 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   runStatus.textContent = 'Ready to run.'
 
   const progressMount = document.createElement('div')
-  progressMount.className = 'output-block'
+  progressMount.className = 'output-block progress-mount'
   progressMount.append(renderProgressBar(0, 3))
 
-  const readingGuide = document.createElement('section')
-  readingGuide.className = 'output-block reading-guide'
-  readingGuide.innerHTML = `
-    <h3 class="card-section-title">How to read this output</h3>
-    <p>The line chart tracks recovered fraction from 0 to 1 over query count.</p>
-    <p>The node strip shows confidence concentration, where brighter cells mean stronger inferred confidence.</p>
-    <p>Higher error rate and lower availability usually flatten both outputs.</p>
+  const placeholder = document.createElement('section')
+  placeholder.className = 'output-block output-placeholder'
+  placeholder.innerHTML = `
+    <h3 class="card-section-title">Replay output</h3>
+    <p>Click <strong>Run oracle replay</strong> to populate this panel. You'll get a verdict banner with the recovered fraction, the convergence curve, and a per-component confidence strip.</p>
   `
 
-  const runSummary = document.createElement('p')
-  runSummary.className = 'run-summary'
-  runSummary.textContent = 'Run summary appears after execution.'
-
-  const chartMount = document.createElement('div')
-  chartMount.className = 'output-block'
-  const chartTitle = document.createElement('h3')
-  chartTitle.className = 'card-section-title'
-  chartTitle.textContent = 'Simulation Output: Recovered Components Over Queries'
-  chartMount.append(chartTitle)
-
-  const nodeMount = document.createElement('div')
-  nodeMount.className = 'output-block'
-  nodeMount.style.display = 'grid'
-  nodeMount.style.gap = '0.4rem'
-
-  const nodeTitle = document.createElement('h3')
-  nodeTitle.className = 'card-section-title'
-  nodeTitle.textContent = 'Simulation Output: Node Confidence Snapshot'
-  nodeMount.append(nodeTitle)
+  const resultMount = document.createElement('div')
+  resultMount.className = 'output-mount'
+  resultMount.append(placeholder)
 
   const chartInterpretation = renderInterpretationBlock({
     whatSeeing:
@@ -147,17 +136,6 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
       'It demonstrates the core paper intuition that imperfect feedback can still leak actionable information in aggregate.',
     notProve:
       'It does not establish end-to-end key recovery cost on a specific implementation or a practical attack timeline.',
-  })
-
-  const nodeInterpretation = renderInterpretationBlock({
-    whatSeeing:
-      'Each cell is a variable confidence proxy after the replay, with brighter cells indicating higher inferred confidence.',
-    parameterChange:
-      'Cleaner oracle responses increase confidence uniformity; noisier conditions produce patchy, lower-confidence regions.',
-    whyMatters:
-      'The strip helps visualize whether uncertainty is globally reduced or concentrated in a few components.',
-    notProve:
-      'These confidence values are synthetic and not calibrated to a concrete decoder implementation in the paper.',
   })
 
   const mapping = renderPaperMapping({
@@ -174,30 +152,56 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
     seedInput.disabled = true
     pErrInput.disabled = true
     alphaInput.disabled = true
-    chartMount.classList.add('is-running')
-    nodeMount.classList.add('is-running')
+    resultMount.classList.add('is-running')
     run.textContent = 'Running replay...'
 
-    const stages = ['Sampling traces...', 'Estimating confidence...', 'Preparing replay results...']
+    const stages = ['Sampling oracle queries...', 'Aggregating LDPC pass...', 'Preparing replay results...']
     for (let index = 0; index < stages.length; index += 1) {
       runStatus.textContent = stages[index] ?? 'Running...'
       progressMount.innerHTML = ''
       progressMount.append(renderProgressBar(index + 1, stages.length))
-      await new Promise<void>((resolve) => {
-        window.setTimeout(() => resolve(), 120)
-      })
+      await new Promise<void>((resolve) => { window.setTimeout(() => resolve(), 120) })
     }
 
     const budget = level === 1024 ? 240 : 180
     const result = runDfOracleSim(`${seed}:${level}`, pErr, alpha, budget)
-    chartMount.innerHTML = ''
-    nodeMount.innerHTML = ''
-    chartMount.append(chartTitle, renderTraceViewer(result.recoveredOverQueries, 'var(--mirror-cloud)'))
-    nodeMount.append(nodeTitle, renderNodeStrip(result.variables.map((v) => v.confidence)))
-    runSummary.textContent = summarizeDfRun(result.recoveredOverQueries, result.variables.map((v) => v.confidence), pErr, alpha)
+    const finalRecovered = result.recoveredOverQueries[result.recoveredOverQueries.length - 1] ?? 0
+    const confidences = result.variables.map((v) => v.confidence)
+    const avgConfidence = confidences.reduce((a, b) => a + b, 0) / Math.max(1, confidences.length)
 
-    chartMount.classList.remove('is-running')
-    nodeMount.classList.remove('is-running')
+    resultMount.innerHTML = ''
+    resultMount.classList.remove('is-running')
+
+    const verdict = verdictForDf(finalRecovered, avgConfidence, pErr, alpha)
+    resultMount.append(renderVerdictBanner({
+      tone: verdict.tone,
+      headline: verdict.headline,
+      detail: verdict.detail,
+      metrics: [
+        { label: 'Recovered fraction', value: `${(finalRecovered * 100).toFixed(1)}%` },
+        { label: 'Avg confidence', value: `${(avgConfidence * 100).toFixed(1)}%` },
+        { label: 'Queries used', value: budget.toString() },
+        { label: 'Oracle pErr / α', value: `${pErr.toFixed(2)} / ${alpha.toFixed(2)}` },
+      ],
+      nextStep: verdict.nextStep,
+    }))
+
+    const chartCard = document.createElement('section')
+    chartCard.className = 'output-block'
+    const chartTitle = document.createElement('h3')
+    chartTitle.className = 'card-section-title'
+    chartTitle.textContent = 'Recovered fraction over query count'
+    chartCard.append(chartTitle, renderTraceViewer(result.recoveredOverQueries, 'var(--mirror-cloud)'))
+    resultMount.append(chartCard)
+
+    const stripCard = document.createElement('section')
+    stripCard.className = 'output-block'
+    const stripTitle = document.createElement('h3')
+    stripTitle.className = 'card-section-title'
+    stripTitle.textContent = 'Per-component confidence (brighter = stronger inference)'
+    stripCard.append(stripTitle, renderNodeStrip(confidences))
+    resultMount.append(stripCard)
+
     runStatus.textContent = 'Replay complete.'
     seedInput.disabled = false
     pErrInput.disabled = false
@@ -208,20 +212,6 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
 
   setup.append(seedInput, pErrInput, alphaInput, run)
 
-  card.append(
-    head,
-    setup,
-    runStatus,
-    progressMount,
-    readingGuide,
-    runSummary,
-    renderMirror('clouded'),
-    chartMount,
-    chartInterpretation,
-    nodeMount,
-    nodeInterpretation,
-    mapping,
-    renderRealityPanel(imperfectDfReality),
-  )
+  card.append(head, setup, runStatus, progressMount, resultMount, chartInterpretation, mapping, renderRealityPanel(imperfectDfReality))
   return card
 }
