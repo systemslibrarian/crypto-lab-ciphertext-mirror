@@ -1,81 +1,41 @@
 # crypto-lab-ciphertext-mirror
 
-FO re-encryption as oracle: three papers, three replays.
+## 1. What It Is
 
-This crypto-lab demo illustrates a specific narrative arc around ML-KEM decapsulation's FO re-encryption check (the mirror): masking fails under realistic leakage assumptions, imperfect oracles still suffice for recovery under adaptive decoding, and NTT+CRT RNR blinding can suppress leakage and improve fault handling in the modeled path.
+This demo is a browser-based educational replay centered on ML-KEM decapsulation behavior, including K-PKE flows and the FO re-encryption comparison path modeled in the code. It illustrates how simulated leakage and oracle behavior can affect key-recovery experiments, and how simulated blinding changes observed outcomes in the same environment. The primitive family is post-quantum public-key cryptography, implemented here as inspectable TypeScript simulation code rather than production cryptographic software. It is intended for mechanism understanding and comparison, not for real-world secure deployment or attack tooling.
 
-## Papers
+## 2. When to Use It
 
-1. Hermelink et al. (2024/060), *The Insecurity of Masked Comparisons: SCAs on ML-KEM's FO-Transform*  
-   https://eprint.iacr.org/2024/060
-2. Guo, Nabokov, Johansson (2026/070), *Unlocking the True Potential of Decryption Failure Oracles: A Hybrid Adaptive-LDPC Attack on ML-KEM Using Imperfect Oracles*  
-   https://eprint.iacr.org/2026/070
-3. Duparc, Taha (2025/181), *Improved NTT and CRT-based RNR Blinding for Side-Channel and Fault Resistant Kyber*  
-   https://eprint.iacr.org/2025/181
+- Use this when teaching ML-KEM attack and defense mechanisms in a controlled browser lab.
+  It provides deterministic seeded runs and side-by-side visual outputs that make mechanism differences easier to observe.
+- Use this when you need to inspect FO comparison and replay logic directly in source code.
+  The implementation is local TypeScript, so instrumentation points are visible and editable.
+- Use this when demonstrating how noise and oracle quality affect recovery trends.
+  The UI exposes parameters like noise sigma and oracle error/availability so sensitivity can be explored interactively.
+- Do not use this as production cryptography or security assurance evidence.
+  The repository explicitly models synthetic conditions and does not certify security behavior on real hardware.
 
-## Stack
+## 3. Live Demo
 
-- Vite vanilla-ts (no framework)
-- TypeScript (strict mode)
-- Canvas/SVG visualizations
-- WebCrypto wrappers + pure TypeScript simulation code under src/lib/mlkem
-- Seeded xoshiro256 PRNG for deterministic simulation runs
+https://systemslibrarian.github.io/crypto-lab-ciphertext-mirror/
 
-## Run
+The live demo lets you open three paper-driven card replays and run simulations directly in the browser. You can change controls such as ML-KEM level, seeded run value, noise sigma, oracle error rate, and oracle availability, then observe the resulting charts and mirror-state visuals. The interface models encapsulation/decapsulation behavior and replay metrics for comparison, but it is not a deployment attack tool.
+
+## 4. How to Run Locally
 
 ```bash
+git clone https://github.com/systemslibrarian/crypto-lab-ciphertext-mirror
+cd crypto-lab-ciphertext-mirror
 npm install
 npm run dev
 ```
 
-Build:
+No environment variables are required.
 
-```bash
-npm run build
-```
+## 5. Part of the Crypto-Lab Suite
 
-Test:
-
-```bash
-npm run test
-```
-
-## Safety and scope
-
-This repository is a pedagogical replay and visualization project, not an attack toolkit and not a claim to break or defeat deployed ML-KEM systems. Simulations run on ephemeral in-memory keys and synthetic leakage/oracle models.
-
-## Live demo
-
-- https://systemslibrarian.github.io/crypto-lab-ciphertext-mirror/
-
-## BibTeX-style citations
-
-```bibtex
-@misc{hermelink2024masked,
-  author = {Hermelink et al.},
-  title = {The Insecurity of Masked Comparisons: SCAs on ML-KEM's FO-Transform},
-  year = {2024},
-  howpublished = {IACR ePrint 2024/060},
-  url = {https://eprint.iacr.org/2024/060}
-}
-
-@misc{guo2026imperfect,
-  author = {Guo and Nabokov and Johansson},
-  title = {Unlocking the True Potential of Decryption Failure Oracles: A Hybrid Adaptive-LDPC Attack on ML-KEM Using Imperfect Oracles},
-  year = {2026},
-  howpublished = {IACR ePrint 2026/070},
-  url = {https://eprint.iacr.org/2026/070}
-}
-
-@misc{duparc2025rnr,
-  author = {Duparc and Taha},
-  title = {Improved NTT and CRT-based RNR Blinding for Side-Channel and Fault Resistant Kyber},
-  year = {2025},
-  howpublished = {IACR ePrint 2025/181},
-  url = {https://eprint.iacr.org/2025/181}
-}
-```
+One of 60+ live browser demos at [systemslibrarian.github.io/crypto-lab](https://systemslibrarian.github.io/crypto-lab/) — spanning Atbash (600 BCE) through NIST FIPS 203/204/205 (2024).
 
 ---
 
-*"So whether you eat or drink or whatever you do, do it all for the glory of God."* — 1 Corinthians 10:31
+*"Whether you eat or drink, or whatever you do, do all to the glory of God." — 1 Corinthians 10:31*
