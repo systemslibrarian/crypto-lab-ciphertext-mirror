@@ -32,6 +32,14 @@ function setupThemeToggle(): void {
     return
   }
 
+  const safeSetTheme = (theme: 'light' | 'dark'): void => {
+    try {
+      localStorage.setItem('theme', theme)
+    } catch (_err) {
+      // Ignore storage write failures in restricted browsing contexts.
+    }
+  }
+
   const sync = (): void => {
     const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
     toggle.textContent = isDark ? '🌙' : '☀️'
@@ -42,7 +50,7 @@ function setupThemeToggle(): void {
     const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
     const next = current === 'dark' ? 'light' : 'dark'
     document.documentElement.setAttribute('data-theme', next)
-    localStorage.setItem('theme', next)
+    safeSetTheme(next)
     sync()
   })
 

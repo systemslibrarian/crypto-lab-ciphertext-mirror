@@ -3,8 +3,13 @@
   <head>
     <script>
       (function () {
-        const saved = localStorage.getItem('theme');
-        document.documentElement.setAttribute('data-theme', saved ?? 'dark');
+        var saved = null;
+        try {
+          saved = localStorage.getItem('theme');
+        } catch (_err) {
+          saved = null;
+        }
+        document.documentElement.setAttribute('data-theme', saved || 'dark');
       })();
     </script>
     <meta charset="UTF-8" />
