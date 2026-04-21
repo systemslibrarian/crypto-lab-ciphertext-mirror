@@ -10,6 +10,40 @@ import { renderMirror } from '../../lib/viz/mirror'
 import { maskedComparisonReality } from './reality'
 import { runMaskedComparisonSim } from './sim'
 
+const ORDERS = [0, 1, 2, 3] as const
+const WEAK_SIGNAL_THRESHOLD = 5_000_000
+
+function formatTraceEstimate(value: number): string {
+  const rounded = Math.max(0, Math.round(value))
+  if (rounded >= WEAK_SIGNAL_THRESHOLD) {
+    return `${rounded.toLocaleString()} (very weak distinction in this replay window)`
+  }
+  return rounded.toLocaleString()
+}
+
+function summarizeMaskedRun(runA: Record<0 | 1 | 2 | 3, number>, runB: Record<0 | 1 | 2 | 3, number> | null): string {
+  const avgA = ORDERS.reduce<number>((acc, order) => acc + runA[order], 0) / ORDERS.length
+  if (!runB) {
+    const bestOrder = ORDERS.reduce((best, order) => (runA[order] < runA[best] ? order : best), 0)
+    if (avgA >= WEAK_SIGNAL_THRESHOLD) {
+      return 'Summary: this run is mostly flat at current settings, so leakage is not clearly distinguishable inside this replay budget.'
+    }
+    return `Summary: d=${bestOrder} gives the strongest distinguishable signal in this run (lowest 95% trace estimate).`
+  }
+
+  const avgB = ORDERS.reduce<number>((acc, order) => acc + runB[order], 0) / ORDERS.length
+  if (avgA >= WEAK_SIGNAL_THRESHOLD && avgB >= WEAK_SIGNAL_THRESHOLD) {
+    return 'Summary: both runs are similarly flat, so changing sigma here did not produce a clear difference in distinguishability.'
+  }
+  if (avgB > avgA * 1.1) {
+    return 'Summary: Run B is harder to distinguish on average than Run A (higher trace requirement), consistent with stronger noise suppression.'
+  }
+  if (avgA > avgB * 1.1) {
+    return 'Summary: Run B is easier to distinguish on average than Run A (lower trace requirement), so this parameter shift increased signal strength.'
+  }
+  return 'Summary: Run A and Run B are close overall, with only minor differences across masking orders.'
+}
+
 export function renderMaskedComparisonCardView(): HTMLElement {
   const card = document.createElement('section')
   card.className = 'card-shell'
@@ -101,6 +135,19 @@ export function renderMaskedComparisonCardView(): HTMLElement {
   panes.style.gap = '0.75rem'
   panes.className = 'output-block'
 
+  const readingGuide = document.createElement('section')
+  readingGuide.className = 'output-block reading-guide'
+  readingGuide.innerHTML = `
+    <h3 class="card-section-title">How to read this output</h3>
+    <p>Lower trace estimates mean the leakage signal is easier to distinguish.</p>
+    <p>Higher values mean weaker distinguishability in this synthetic replay.</p>
+    <p>d=0..3 are masking orders; compare how quickly each order separates from flat behavior.</p>
+  `
+
+  const runSummary = document.createElement('p')
+  runSummary.className = 'run-summary'
+  runSummary.textContent = 'Run summary appears after execution.'
+
   const runStatus = document.createElement('p')
   runStatus.className = 'run-status'
   runStatus.textContent = 'Ready to run.'
@@ -162,7 +209,9 @@ export function renderMaskedComparisonCardView(): HTMLElement {
     heading.textContent = compareMode ? 'Simulation Output: Run A vs Run B' : 'Simulation Output'
     panes.append(heading)
 
-    ;([0, 1, 2, 3] as const).forEach((order) => {
+    runSummary.textContent = summarizeMaskedRun(result.tracesNeeded95, compareResult?.tracesNeeded95 ?? null)
+
+    ORDERS.forEach((order) => {
       const pane = document.createElement('section')
       pane.className = 'compare-pane'
       pane.style.display = 'grid'
@@ -173,22 +222,22 @@ export function renderMaskedComparisonCardView(): HTMLElement {
       title.textContent = `d=${order}`
 
       const runA = document.createElement('div')
-      runA.innerHTML = `<p>Run A (sigma=${sigma.toFixed(2)}): traces for 95% confidence ${result.tracesNeeded95[order]}</p>`
+      runA.innerHTML = `<p><strong>Run A</strong> (sigma=${sigma.toFixed(2)}): 95% estimate ${formatTraceEstimate(result.tracesNeeded95[order])}</p>`
       runA.append(renderTraceViewer(result.curves[order], order === 0 ? 'var(--mirror-crack)' : 'var(--mirror-glow)'))
       pane.append(runA)
 
       if (compareResult) {
         const runB = document.createElement('div')
-        runB.innerHTML = `<p>Run B (sigma=${sigmaCompare.toFixed(2)}): traces for 95% confidence ${compareResult.tracesNeeded95[order]}</p>`
+        runB.innerHTML = `<p><strong>Run B</strong> (sigma=${sigmaCompare.toFixed(2)}): 95% estimate ${formatTraceEstimate(compareResult.tracesNeeded95[order])}</p>`
         runB.append(renderTraceViewer(compareResult.curves[order], 'var(--warning)'))
         pane.append(runB)
 
         const comparison = document.createElement('p')
         const delta = compareResult.tracesNeeded95[order] - result.tracesNeeded95[order]
         if (delta > 0) {
-          comparison.textContent = `Comparison: Run B needs ${delta} more traces than Run A at d=${order}.`
+          comparison.textContent = `Comparison: Run B needs ${Math.round(delta).toLocaleString()} more traces than Run A at d=${order}.`
         } else if (delta < 0) {
-          comparison.textContent = `Comparison: Run B needs ${Math.abs(delta)} fewer traces than Run A at d=${order}.`
+          comparison.textContent = `Comparison: Run B needs ${Math.round(Math.abs(delta)).toLocaleString()} fewer traces than Run A at d=${order}.`
         } else {
           comparison.textContent = `Comparison: Run A and Run B have the same 95% trace estimate at d=${order}.`
         }
@@ -213,6 +262,6 @@ export function renderMaskedComparisonCardView(): HTMLElement {
 
   setup.append(seedInput, sigmaInput, sigmaCompareInput, bitInput, compareWrap, run)
 
-  card.append(head, setup, runStatus, progressMount, mirrorMount, panes, chartInterpretation, mapping, renderRealityPanel(maskedComparisonReality))
+  card.append(head, setup, runStatus, progressMount, mirrorMount, readingGuide, runSummary, panes, chartInterpretation, mapping, renderRealityPanel(maskedComparisonReality))
   return card
 }

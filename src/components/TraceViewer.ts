@@ -2,7 +2,7 @@ export function renderTraceViewer(points: number[], color = 'var(--mirror-glow)'
   const canvas = document.createElement('canvas')
   canvas.className = 'trace-canvas'
   canvas.width = 720
-  canvas.height = 200
+  canvas.height = 140
 
   const ctx = canvas.getContext('2d')
   if (!ctx) {

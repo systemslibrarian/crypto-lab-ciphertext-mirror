@@ -10,6 +10,19 @@ import { renderMirror } from '../../lib/viz/mirror'
 import { imperfectDfReality } from './reality'
 import { runDfOracleSim } from './sim'
 
+function summarizeDfRun(recoveredOverQueries: number[], confidence: number[], pErr: number, alpha: number): string {
+  const finalRecovered = recoveredOverQueries[recoveredOverQueries.length - 1] ?? 0
+  const avgConfidence = confidence.reduce((acc, value) => acc + value, 0) / Math.max(1, confidence.length)
+
+  if (finalRecovered >= 0.9) {
+    return `Summary: replay converged strongly (${(finalRecovered * 100).toFixed(1)}% recovered) with average confidence ${(avgConfidence * 100).toFixed(1)}%.`
+  }
+  if (finalRecovered >= 0.7) {
+    return `Summary: replay converged partially (${(finalRecovered * 100).toFixed(1)}% recovered); error rate ${pErr.toFixed(2)} and availability ${alpha.toFixed(2)} still leave noticeable uncertainty.`
+  }
+  return `Summary: replay stayed noisy (${(finalRecovered * 100).toFixed(1)}% recovered), so this setting does not yield strong component recovery in this budget.`
+}
+
 function renderNodeStrip(confidence: number[]): HTMLElement {
   const row = document.createElement('div')
   row.style.display = 'grid'
@@ -95,6 +108,19 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   progressMount.className = 'output-block'
   progressMount.append(renderProgressBar(0, 3))
 
+  const readingGuide = document.createElement('section')
+  readingGuide.className = 'output-block reading-guide'
+  readingGuide.innerHTML = `
+    <h3 class="card-section-title">How to read this output</h3>
+    <p>The line chart tracks recovered fraction from 0 to 1 over query count.</p>
+    <p>The node strip shows confidence concentration, where brighter cells mean stronger inferred confidence.</p>
+    <p>Higher error rate and lower availability usually flatten both outputs.</p>
+  `
+
+  const runSummary = document.createElement('p')
+  runSummary.className = 'run-summary'
+  runSummary.textContent = 'Run summary appears after execution.'
+
   const chartMount = document.createElement('div')
   chartMount.className = 'output-block'
   const chartTitle = document.createElement('h3')
@@ -168,6 +194,7 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
     nodeMount.innerHTML = ''
     chartMount.append(chartTitle, renderTraceViewer(result.recoveredOverQueries, 'var(--mirror-cloud)'))
     nodeMount.append(nodeTitle, renderNodeStrip(result.variables.map((v) => v.confidence)))
+    runSummary.textContent = summarizeDfRun(result.recoveredOverQueries, result.variables.map((v) => v.confidence), pErr, alpha)
 
     chartMount.classList.remove('is-running')
     nodeMount.classList.remove('is-running')
@@ -186,6 +213,8 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
     setup,
     runStatus,
     progressMount,
+    readingGuide,
+    runSummary,
     renderMirror('clouded'),
     chartMount,
     chartInterpretation,

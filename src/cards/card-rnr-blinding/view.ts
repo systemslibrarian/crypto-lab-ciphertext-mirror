@@ -10,6 +10,28 @@ import { renderMirror } from '../../lib/viz/mirror'
 import { rnrBlindingReality } from './reality'
 import { runBlindingSim } from './sim'
 
+function meanAbs(values: number[]): number {
+  if (values.length === 0) {
+    return 0
+  }
+  const total = values.reduce((acc, value) => acc + Math.abs(value), 0)
+  return total / values.length
+}
+
+function summarizeBlindingRun(unblinded: number[], blinded: number[], unblindedState: string, blindedState: string): string {
+  const unblindedMean = meanAbs(unblinded)
+  const blindedMean = meanAbs(blinded)
+  const ratio = unblindedMean <= 1e-9 ? 1 : blindedMean / unblindedMean
+
+  if (blindedState === 'ABORT') {
+    return `Summary: blinded branch aborted on integrity check while unblinded branch reported ${unblindedState}, showing the fault-detection path in action.`
+  }
+  if (ratio < 0.75) {
+    return `Summary: blinded waveform amplitude is lower than unblinded (relative mean ${ratio.toFixed(2)}), consistent with reduced visible leakage in this model.`
+  }
+  return `Summary: both waveforms are close in amplitude (relative mean ${ratio.toFixed(2)}); this run does not show a large visual separation.`
+}
+
 export function renderRnrBlindingCardView(): HTMLElement {
   const card = document.createElement('section')
   card.className = 'card-shell'
@@ -76,6 +98,19 @@ export function renderRnrBlindingCardView(): HTMLElement {
   const progressMount = document.createElement('div')
   progressMount.className = 'output-block'
   progressMount.append(renderProgressBar(0, 3))
+
+  const readingGuide = document.createElement('section')
+  readingGuide.className = 'output-block reading-guide'
+  readingGuide.innerHTML = `
+    <h3 class="card-section-title">How to read this output</h3>
+    <p>Run A is the unblinded path, and Run B is the blinded path under the same seed and sigma.</p>
+    <p>Compare waveform amplitude and final state labels together; neither panel alone is the full story.</p>
+    <p>If fault injection is enabled, an ABORT state on Run B indicates detection in this replay model.</p>
+  `
+
+  const runSummary = document.createElement('p')
+  runSummary.className = 'run-summary'
+  runSummary.textContent = 'Run summary appears after execution.'
 
   const compare = document.createElement('div')
   compare.className = 'output-block'
@@ -159,6 +194,12 @@ export function renderRnrBlindingCardView(): HTMLElement {
 
     compare.append(left, right)
     outputRow.textContent = `Unblinded: ${result.unblindedState} | Blinded: ${result.blindedState}`
+    runSummary.textContent = summarizeBlindingRun(
+      result.unblindedCorrelation,
+      result.blindedCorrelation,
+      result.unblindedState,
+      result.blindedState,
+    )
     comparisonSummary.textContent =
       result.blindedState === 'ABORT'
         ? 'Comparison: fault detection triggers an abort on the blinded branch while the unblinded branch shows tampered state.'
@@ -179,6 +220,8 @@ export function renderRnrBlindingCardView(): HTMLElement {
     setup,
     runStatus,
     progressMount,
+    readingGuide,
+    runSummary,
     compare,
     comparisonSummary,
     compareInterpretation,
