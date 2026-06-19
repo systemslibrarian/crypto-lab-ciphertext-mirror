@@ -1,9 +1,11 @@
+import { renderCheckboxField, renderSliderField, renderTextField } from '../../components/Field'
 import { renderInterpretationBlock } from '../../components/InterpretationBlock'
 import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
 import { renderProgressBar } from '../../components/ProgressBar'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
+import { renderTakeaway } from '../../components/Takeaway'
 import { renderTraceViewer } from '../../components/TraceViewer'
 import { renderVerdictBanner, type VerdictTone } from '../../components/VerdictBanner'
 import type { MlKemLevel } from '../../components/types'
@@ -27,36 +29,37 @@ function verdictForBlinding(
   const ua = meanAbs(unblinded)
   const ba = meanAbs(blinded)
   const ratio = ua > 1e-9 ? ba / ua : 1
-  const reduction = ratio < 1 ? `${Math.round((1 - ratio) * 100)}% lower amplitude` : `${ratio.toFixed(2)}× amplitude`
+  const reduction = ratio < 1 ? `${Math.round((1 - ratio) * 100)}% lower` : `${ratio.toFixed(2)}× higher`
 
   if (fault && blindedState === 'ABORT' && unblindedState !== 'ABORT') {
     return {
       tone: 'good',
       headline: 'Blinding caught the fault — unblinded path tampered, blinded path aborted',
       detail: `Run B aborted on the integrity check while Run A returned ${unblindedState}, exactly the asymmetry the paper highlights.`,
-      nextStep: 'Disable fault injection and rerun to compare amplitude only, isolating the side-channel benefit.',
+      nextStep: 'Disable fault injection and rerun to compare leakage only, isolating the side-channel benefit.',
     }
   }
   if (ratio < 0.6) {
     return {
       tone: 'good',
-      headline: `Blinded waveform is ${reduction} than unblinded`,
-      detail: `Run A → ${unblindedState}, Run B → ${blindedState}. The blinded branch suppresses the visible leakage envelope at this sigma.`,
-      nextStep: 'Raise sigma to test whether the gap survives heavier noise, or enable fault injection to stress integrity.',
+      headline: `Blinding holds — leakage correlation is ${reduction} than unblinded`,
+      detail: `Run A → ${unblindedState}, Run B → ${blindedState}. The random mask decorrelates the blinded path's leakage from the secret at this sigma.`,
+      nextStep:
+        'Raise sigma to test whether the gap survives heavier noise, or enable fault injection to stress integrity.',
     }
   }
   if (ratio < 0.9) {
     return {
       tone: 'warn',
-      headline: `Modest reduction — blinded is ${reduction} than unblinded`,
-      detail: `Run A → ${unblindedState}, Run B → ${blindedState}. The defense narrows the leakage but does not eliminate the trend.`,
-      nextStep: 'Try a different seed to confirm the trend isn\'t seed-specific, then sweep sigma.',
+      headline: `Modest reduction — blinded leakage is ${reduction} than unblinded`,
+      detail: `Run A → ${unblindedState}, Run B → ${blindedState}. The defense narrows the correlation but does not eliminate the trend in this run.`,
+      nextStep: "Try a different seed to confirm the trend isn't seed-specific, then sweep sigma.",
     }
   }
   return {
     tone: 'neutral',
-    headline: 'Both branches present similar amplitude in this run',
-    detail: `Run A → ${unblindedState}, Run B → ${blindedState}. Relative blinded/unblinded mean amplitude is ${ratio.toFixed(2)} — no clear visual separation here.`,
+    headline: 'Both branches show similar leakage correlation in this run',
+    detail: `Run A → ${unblindedState}, Run B → ${blindedState}. Relative blinded/unblinded mean correlation is ${ratio.toFixed(2)} — no clear separation here.`,
     nextStep: 'Lower sigma so the unblinded path leaks more strongly and the contrast becomes visible.',
   }
 }
@@ -68,7 +71,8 @@ export function renderRnrBlindingCardView(): HTMLElement {
   const head = document.createElement('div')
   head.className = 'card-head'
   const titleBlock = document.createElement('div')
-  titleBlock.innerHTML = '<h2>2025/181 - NTT + CRT RNR Blinding</h2><p>Compare unblinded and blinded pipelines under identical leakage conditions.</p>'
+  titleBlock.innerHTML =
+    '<h2>2025/181 - NTT + CRT RNR Blinding</h2><p>Compare unblinded and blinded pipelines under identical leakage conditions.</p>'
   head.append(
     titleBlock,
     renderScholarBadge({
@@ -87,12 +91,18 @@ export function renderRnrBlindingCardView(): HTMLElement {
   let sigma = 0.6
   let injectFault = false
 
-  setup.append(renderParamSelector(level, (next) => { level = next }))
+  setup.append(
+    renderParamSelector(level, (next) => {
+      level = next
+    }),
+  )
 
   const seedInput = document.createElement('input')
   seedInput.value = seed
   seedInput.setAttribute('aria-label', 'Simulation seed')
-  seedInput.addEventListener('input', () => { seed = seedInput.value })
+  seedInput.addEventListener('input', () => {
+    seed = seedInput.value
+  })
 
   const sigmaInput = document.createElement('input')
   sigmaInput.type = 'range'
@@ -101,13 +111,16 @@ export function renderRnrBlindingCardView(): HTMLElement {
   sigmaInput.step = '0.05'
   sigmaInput.value = String(sigma)
   sigmaInput.setAttribute('aria-label', 'Noise sigma')
-  sigmaInput.addEventListener('input', () => { sigma = Number(sigmaInput.value) })
+  sigmaInput.addEventListener('input', () => {
+    sigma = Number(sigmaInput.value)
+  })
 
-  const faultWrap = document.createElement('label')
   const faultToggle = document.createElement('input')
   faultToggle.type = 'checkbox'
-  faultToggle.addEventListener('change', () => { injectFault = faultToggle.checked })
-  faultWrap.append(faultToggle, document.createTextNode('Enable single-bit fault injection'))
+  faultToggle.addEventListener('change', () => {
+    injectFault = faultToggle.checked
+  })
+  const faultWrap = renderCheckboxField('Enable single-bit fault injection', faultToggle)
 
   const run = document.createElement('button')
   run.type = 'button'
@@ -116,6 +129,8 @@ export function renderRnrBlindingCardView(): HTMLElement {
 
   const runStatus = document.createElement('p')
   runStatus.className = 'run-status'
+  runStatus.setAttribute('role', 'status')
+  runStatus.setAttribute('aria-live', 'polite')
   runStatus.textContent = 'Ready to run.'
 
   const progressMount = document.createElement('div')
@@ -126,7 +141,7 @@ export function renderRnrBlindingCardView(): HTMLElement {
   placeholder.className = 'output-block output-placeholder'
   placeholder.innerHTML = `
     <h3 class="card-section-title">Replay output</h3>
-    <p>Click <strong>Run blinding replay</strong> to populate this panel. You'll see a verdict banner comparing both branches and the matched A/B correlation traces.</p>
+    <p>Click <strong>Run blinding replay</strong> to populate this panel. You'll see a verdict banner comparing both branches and the matched A/B CPA correlation curves — unblinded climbing while blinded stays flat.</p>
   `
 
   const resultMount = document.createElement('div')
@@ -135,13 +150,13 @@ export function renderRnrBlindingCardView(): HTMLElement {
 
   const compareInterpretation = renderInterpretationBlock({
     whatSeeing:
-      'Two matched runs under the same seed/noise show leakage trend differences between unblinded and blinded paths.',
+      'Both panes run the same CPA distinguisher (correlating leakage against the correct-key Hamming-weight prediction) on a pointwise NTT multiply. Run A is unblinded; Run B adds an RNR random mask before the value is processed.',
     parameterChange:
-      'Higher noise can flatten both traces, while fault injection stresses the unblinded path and may alter state outcomes.',
+      "The unblinded correlation climbs to a high plateau; the blinded one stays pinned near zero because the fresh mask is independent of the attacker's prediction. Raising noise lowers the unblinded plateau but the blinded path was already decorrelated. Fault injection trips the blinded path's integrity check (ABORT) while the unblinded path silently returns a tampered result.",
     whyMatters:
-      'The side-by-side layout makes defense impact explicit instead of relying on absolute values from a single run.',
+      "The defense gap is emergent, not staged: the blinded curve is flat because the math decorrelates it, demonstrating the paper's claim that RNR blinding removes the exploitable side-channel and adds fault detection.",
     notProve:
-      'It does not prove formal masking security or implementation resistance on production hardware.',
+      "It does not prove formal masking security, model real hardware fault fidelity, or measure the blinding's performance overhead.",
   })
 
   const mapping = renderPaperMapping({
@@ -161,78 +176,130 @@ export function renderRnrBlindingCardView(): HTMLElement {
     resultMount.classList.add('is-running')
     run.textContent = 'Running replay...'
 
-    const stages = ['Running unblinded branch...', 'Running blinded branch...', 'Preparing replay results...']
-    for (let index = 0; index < stages.length; index += 1) {
-      runStatus.textContent = stages[index] ?? 'Running...'
-      progressMount.innerHTML = ''
-      progressMount.append(renderProgressBar(index + 1, stages.length))
-      await new Promise<void>((resolve) => { window.setTimeout(() => resolve(), 120) })
+    try {
+      const stages = ['Running unblinded branch...', 'Running blinded branch...', 'Preparing replay results...']
+      for (let index = 0; index < stages.length; index += 1) {
+        runStatus.textContent = stages[index] ?? 'Running...'
+        progressMount.innerHTML = ''
+        progressMount.append(renderProgressBar(index + 1, stages.length))
+        await new Promise<void>((resolve) => {
+          window.setTimeout(() => resolve(), 120)
+        })
+      }
+
+      const result = runBlindingSim(`${seed}:${level}`, sigma, injectFault)
+      const ua = meanAbs(result.unblindedCorrelation)
+      const ba = meanAbs(result.blindedCorrelation)
+      const ratio = ua > 1e-9 ? ba / ua : 1
+
+      resultMount.innerHTML = ''
+      resultMount.classList.remove('is-running')
+
+      const verdict = verdictForBlinding(
+        result.unblindedCorrelation,
+        result.blindedCorrelation,
+        result.unblindedState,
+        result.blindedState,
+        injectFault,
+      )
+      resultMount.append(
+        renderVerdictBanner({
+          tone: verdict.tone,
+          headline: verdict.headline,
+          detail: verdict.detail,
+          metrics: [
+            { label: 'Run A state', value: result.unblindedState },
+            { label: 'Run B state', value: result.blindedState },
+            { label: 'Mean |corr| Run A', value: ua.toFixed(3) },
+            { label: 'Mean |corr| Run B', value: ba.toFixed(3) },
+            { label: 'B / A ratio', value: ratio.toFixed(2) },
+            { label: 'Sigma / fault', value: `${sigma.toFixed(2)} / ${injectFault ? 'on' : 'off'}` },
+          ],
+          nextStep: verdict.nextStep,
+        }),
+      )
+
+      const compare = document.createElement('section')
+      compare.className = 'output-block'
+      const compareTitle = document.createElement('h3')
+      compareTitle.className = 'card-section-title'
+      compareTitle.textContent = 'Unblinded vs blinded correlation (matched seed)'
+      compare.append(compareTitle)
+
+      const grid = document.createElement('div')
+      grid.style.display = 'grid'
+      grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(260px, 1fr))'
+      grid.style.gap = '0.75rem'
+
+      // Shared scale so the blinded curve visibly reads as flat against the unblinded one.
+      const corrScale = Math.max(...result.unblindedCorrelation, ...result.blindedCorrelation, 1e-6)
+
+      const left = document.createElement('section')
+      left.className = 'compare-pane'
+      left.innerHTML = '<h4>Run A — Unblinded</h4>'
+      left.append(
+        renderTraceViewer(result.unblindedCorrelation, {
+          color: 'var(--mirror-crack)',
+          fixedMaxAbs: corrScale,
+          yLabel: '|corr|',
+          xLabel: 'traces →',
+          ariaLabel: `Unblinded path: leakage correlation with the secret climbs to ${ua.toFixed(3)} — the key leaks.`,
+        }),
+      )
+      const right = document.createElement('section')
+      right.className = 'compare-pane'
+      right.innerHTML = '<h4>Run B — Blinded</h4>'
+      right.append(
+        renderTraceViewer(result.blindedCorrelation, {
+          color: 'var(--success)',
+          fixedMaxAbs: corrScale,
+          yLabel: '|corr|',
+          xLabel: 'traces →',
+          ariaLabel: `Blinded path: correlation stays near ${ba.toFixed(3)} — the random mask decorrelates the leakage.`,
+        }),
+      )
+      grid.append(left, right)
+      compare.append(grid)
+      resultMount.append(compare)
+
+      runStatus.textContent = 'Replay complete.'
+    } catch (error) {
+      console.error('RNR blinding replay failed', error)
+      resultMount.innerHTML =
+        '<section class="output-block"><p class="run-status">The replay hit an unexpected error and was halted. Adjust the parameters and run again.</p></section>'
+      runStatus.textContent = 'Replay failed.'
+    } finally {
+      resultMount.classList.remove('is-running')
+      seedInput.disabled = false
+      sigmaInput.disabled = false
+      faultToggle.disabled = false
+      run.disabled = false
+      run.textContent = 'Run blinding replay'
     }
-
-    const result = runBlindingSim(`${seed}:${level}`, sigma, injectFault)
-    const ua = meanAbs(result.unblindedCorrelation)
-    const ba = meanAbs(result.blindedCorrelation)
-    const ratio = ua > 1e-9 ? ba / ua : 1
-
-    resultMount.innerHTML = ''
-    resultMount.classList.remove('is-running')
-
-    const verdict = verdictForBlinding(
-      result.unblindedCorrelation,
-      result.blindedCorrelation,
-      result.unblindedState,
-      result.blindedState,
-      injectFault,
-    )
-    resultMount.append(renderVerdictBanner({
-      tone: verdict.tone,
-      headline: verdict.headline,
-      detail: verdict.detail,
-      metrics: [
-        { label: 'Run A state', value: result.unblindedState },
-        { label: 'Run B state', value: result.blindedState },
-        { label: 'Mean |corr| Run A', value: ua.toFixed(3) },
-        { label: 'Mean |corr| Run B', value: ba.toFixed(3) },
-        { label: 'B / A ratio', value: ratio.toFixed(2) },
-        { label: 'Sigma / fault', value: `${sigma.toFixed(2)} / ${injectFault ? 'on' : 'off'}` },
-      ],
-      nextStep: verdict.nextStep,
-    }))
-
-    const compare = document.createElement('section')
-    compare.className = 'output-block'
-    const compareTitle = document.createElement('h3')
-    compareTitle.className = 'card-section-title'
-    compareTitle.textContent = 'Unblinded vs blinded correlation (matched seed)'
-    compare.append(compareTitle)
-
-    const grid = document.createElement('div')
-    grid.style.display = 'grid'
-    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(260px, 1fr))'
-    grid.style.gap = '0.75rem'
-
-    const left = document.createElement('section')
-    left.className = 'compare-pane'
-    left.innerHTML = '<h4>Run A — Unblinded</h4>'
-    left.append(renderTraceViewer(result.unblindedCorrelation, 'var(--mirror-crack)'))
-    const right = document.createElement('section')
-    right.className = 'compare-pane'
-    right.innerHTML = '<h4>Run B — Blinded</h4>'
-    right.append(renderTraceViewer(result.blindedCorrelation, 'var(--success)'))
-    grid.append(left, right)
-    compare.append(grid)
-    resultMount.append(compare)
-
-    runStatus.textContent = 'Replay complete.'
-    seedInput.disabled = false
-    sigmaInput.disabled = false
-    faultToggle.disabled = false
-    run.disabled = false
-    run.textContent = 'Run blinding replay'
   })
 
-  setup.append(seedInput, sigmaInput, faultWrap, run)
+  setup.append(renderTextField('Seed', seedInput), renderSliderField('Noise σ', sigmaInput), faultWrap, run)
 
-  card.append(head, setup, runStatus, progressMount, resultMount, compareInterpretation, mapping, renderRealityPanel(rnrBlindingReality))
+  const takeaway = renderTakeaway({
+    takeaway:
+      'Blinding removes the leak at its source. Because a fresh random mask is added before the value is processed, the leakage no longer tracks the secret — the blinded curve stays flat no matter the noise, and the integrity check catches injected faults.',
+    experiments: [
+      'Run with fault injection off: the unblinded curve climbs while the blinded one stays pinned near zero.',
+      'Lower σ to 0.2: the unblinded path leaks even harder, yet blinding still holds flat.',
+      'Turn on fault injection: the blinded path ABORTs while the unblinded path silently returns a tampered result.',
+    ],
+  })
+
+  card.append(
+    head,
+    takeaway,
+    setup,
+    runStatus,
+    progressMount,
+    resultMount,
+    compareInterpretation,
+    mapping,
+    renderRealityPanel(rnrBlindingReality),
+  )
   return card
 }

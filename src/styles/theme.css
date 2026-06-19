@@ -40,7 +40,11 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(circle at top left, color-mix(in oklab, var(--surface) 84%, var(--accent)), var(--bg) 50%);
+  background: radial-gradient(
+    circle at top left,
+    color-mix(in oklab, var(--surface) 84%, var(--accent)),
+    var(--bg) 50%
+  );
   color: var(--text);
   font-family: 'IBM Plex Sans', 'Segoe UI', Tahoma, sans-serif;
   min-height: 100%;

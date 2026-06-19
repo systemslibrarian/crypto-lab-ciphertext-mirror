@@ -50,12 +50,7 @@ export function renderTraceBarChart(opts: TraceBarChartOptions): HTMLElement {
     wrap.append(cap)
   }
 
-  const max = Math.max(
-    opts.max ?? 0,
-    ...opts.rows.map((r) => r.value),
-    ...(opts.references ?? []).map((r) => r.at),
-    1,
-  )
+  const max = Math.max(opts.max ?? 0, ...opts.rows.map((r) => r.value), ...(opts.references ?? []).map((r) => r.at), 1)
 
   const grid = document.createElement('div')
   grid.className = 'bar-chart-grid'

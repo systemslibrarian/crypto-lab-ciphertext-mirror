@@ -13,6 +13,10 @@ dist
 *.local
 BLOCKERS.md
 
+# Temp KAT working files / screenshots (vectors are embedded in kat-vectors.json)
+*.rsp
+.shots/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

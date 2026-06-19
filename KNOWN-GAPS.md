@@ -4,24 +4,47 @@ This project is intentionally honest about simulation boundaries. It models mech
 
 ## Card 1 - 2024/060 Masked comparison leakage
 
-- Does not use real silicon power traces or EM captures.
-- Does not include cycle-accurate microarchitectural effects.
-- Does not model implementation-specific alignment drift and register reuse artifacts.
-- Uses synthetic Gaussian noise, so trace-count numbers are illustrative only.
+- Models the attack as a higher-order CPA: the masked decision bit is split into
+  d+1 Boolean shares, each leaks its centered Hamming weight plus Gaussian noise, and
+  the distinguisher is the product of the share leakages (the optimal combiner for
+  Boolean masking). This correctly reproduces the order-vs-noise coupling — trace cost
+  grows ~exponentially in masking order, and the gap between orders widens with noise.
+- Uses an idealized single-bit leakage model, not real silicon power/EM captures, and
+  omits cycle-accurate microarchitectural effects, alignment drift, and register reuse.
+- Reported trace counts apply a fixed pedagogical scale factor (`TRACE_SCALE`, see
+  `sim.ts`) to map the idealized single-bit distinguisher onto a realistic order of
+  magnitude. It changes the absolute numbers, never the shape of the story — the counts
+  are illustrative, not measured break costs against any implementation.
 
 ## Card 2 - 2026/070 Imperfect DF-oracle
 
-- Does not capture hardware acquisition pipeline for real DF-oracle observations.
-- Uses compact LDPC-like structure for live visualization and teaching.
-- Does not include full complexity tuning and all asymptotic constants from the paper.
+- Models the oracle as a binary symmetric channel (flip probability pErr, availability
+  alpha) and runs a genuine hybrid adaptive-LDPC decoder: adaptive per-coefficient probes
+  plus random degree-6 parity checks, fused by sum-product belief propagation over the
+  Tanner graph. Recovery converges for pErr < 0.5 and stalls toward 50% as pErr → 0.5; the
+  parity checks measurably correct residual errors that per-coefficient voting alone cannot.
+- Does not capture the hardware acquisition pipeline for real DF-oracle observations, nor
+  the chosen-ciphertext construction that realizes the oracle in practice.
+- Uses a generic random parity-check geometry rather than the paper's specific LDPC code,
+  and omits its asymptotic constants and complexity tuning.
 
 ## Card 3 - 2025/181 NTT+CRT RNR blinding
 
-- Does not include real compiler lowering and instruction scheduling behavior.
-- Uses simplified single-bit fault model, not multi-fault/adaptive attacker campaigns.
+- Models the side-channel benefit as an emergent CPA result on the genuine ML-KEM NTT
+  base-case multiply (FIPS 203 Algorithm 12, `nttBaseMultiply`): the same distinguisher
+  runs on both paths, and the blinded path's correlation collapses because the fresh
+  random field element decorrelates the leakage from the attacker's hypothesis. The
+  reduction is produced by the masking, not by any hardcoded scaling factor.
+- Targets one NTT coefficient pair rather than instrumenting the whole NTT/CRT pipeline.
+- Uses a simplified single-bit fault model, not multi-fault/adaptive attacker campaigns,
+  and omits real compiler lowering / instruction scheduling behavior.
 - Does not benchmark real hardware overhead or latency impact.
 
 ## Core cryptographic implementation
 
-- The ML-KEM code is pedagogical and instrumentable; it is not certified or production hardened.
-- A FIPS CAVP vector ingestion pipeline is not yet integrated in this repo.
+- The ML-KEM core (`fips203.ts`, `sha3.ts`) is a real FIPS 203 implementation — Keccak,
+  K-PKE, the ML-KEM NTT, CBD sampling, compression, and the FO transform — validated
+  byte-for-byte against the official NIST known-answer vectors for ML-KEM-512/768/1024
+  (KeyGen, Encaps, Decaps, and implicit rejection); see `__tests__/kat.test.ts`.
+- It is written for inspectability and teaching, not constant-time hardened, and is not a
+  CAVP-certified module. Do not use it to protect real data.

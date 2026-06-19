@@ -1,4 +1,5 @@
 import { renderCardGrid } from './components/CardGrid'
+import { renderConceptPrimer } from './components/ConceptPrimer'
 import { renderHeader } from './components/Header'
 import { renderMaskedComparisonCard } from './cards/card-masked-comparison'
 import { renderImperfectDfOracleCard } from './cards/card-imperfect-df-oracle'
@@ -22,7 +23,8 @@ const replayContextByCard: Record<CardSlug, ReplayContext> = {
     title: 'Masked Comparison Leakage Replay',
     citation: 'Hermelink et al., ePrint 2024/060',
     context: 'FO mirror comparison leakage under masking order escalation.',
-    summary: 'This replay demonstrates correlation trends and trace-effort shifts as masking order and noise settings vary.',
+    summary:
+      'This replay demonstrates correlation trends and trace-effort shifts as masking order and noise settings vary.',
   },
   'imperfect-df-oracle': {
     title: 'Imperfect DF-Oracle Replay',
@@ -47,12 +49,22 @@ if (!root) {
 const page = document.createElement('div')
 page.className = 'page'
 
+const skipLink = document.createElement('a')
+skipLink.className = 'skip-link'
+skipLink.href = '#app'
+skipLink.textContent = 'Skip to main content'
+
 const header = renderHeader()
 const main = document.createElement('main')
 main.id = 'app'
+main.tabIndex = -1
 
-page.append(header, main)
+page.append(skipLink, header, main)
 root.append(page)
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
 
 function setupThemeToggle(): void {
   const toggle = header.querySelector<HTMLButtonElement>('.cl-theme-toggle')
@@ -72,6 +84,8 @@ function setupThemeToggle(): void {
     const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
     toggle.textContent = isDark ? '🌙' : '☀️'
     toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode')
+    toggle.setAttribute('aria-pressed', String(isDark))
+    toggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode')
   }
 
   toggle.addEventListener('click', () => {
@@ -116,17 +130,16 @@ function render(scrollToReplay = false): void {
   landingTitle.textContent = 'Choose a paper replay'
   const landingHint = document.createElement('p')
   landingHint.className = 'landing-hint'
-  landingHint.textContent = 'Select any card to open the replay workspace below. The selected paper stays highlighted while you run simulations.'
+  landingHint.textContent =
+    'Select any card to open the replay workspace below. The selected paper stays highlighted while you run simulations.'
 
   landing.append(
     landingTitle,
     landingHint,
-    renderCardGrid(
-      (slug) => {
-        setCard(slug, true)
-      },
-      selectedCard,
-    ),
+    renderConceptPrimer(),
+    renderCardGrid((slug) => {
+      setCard(slug, true)
+    }, selectedCard),
   )
   main.append(landing)
 
@@ -175,7 +188,16 @@ function render(scrollToReplay = false): void {
 
   main.append(replaySection)
   if (scrollToReplay) {
-    replaySection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    replaySection.scrollIntoView({
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      block: 'start',
+    })
+    // Move keyboard focus into the opened workspace so it is reachable without a mouse.
+    const focusTarget = replaySection.querySelector<HTMLElement>('h2')
+    if (focusTarget) {
+      focusTarget.tabIndex = -1
+      focusTarget.focus({ preventScroll: true })
+    }
   }
 }
 

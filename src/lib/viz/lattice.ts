@@ -11,7 +11,10 @@ export type LatticeEdge = {
   weight: number
 }
 
-export function makeBipartite(variableCount: number, checkCount: number): { variables: LatticeNode[]; checks: LatticeNode[]; edges: LatticeEdge[] } {
+export function makeBipartite(
+  variableCount: number,
+  checkCount: number,
+): { variables: LatticeNode[]; checks: LatticeNode[]; edges: LatticeEdge[] } {
   const variables: LatticeNode[] = []
   const checks: LatticeNode[] = []
   const edges: LatticeEdge[] = []

@@ -29,9 +29,6 @@ describe('ML-KEM pedagogical core', () => {
     expect(Array.from(encA.sharedSecret)).toEqual(Array.from(encB.sharedSecret))
   })
 
-  test.skip('FIPS 203 KAT fixture alignment', () => {
-    // Citation: FIPS 203 ML-KEM Known Answer Test files (NIST CAVP vectors).
-    // This test is intentionally skipped until official vector fixtures are checked into this repository.
-    expect(true).toBe(true)
-  })
+  // Byte-exact FIPS 203 conformance against official NIST known-answer vectors now lives
+  // in kat.test.ts (kat-vectors.json). This file covers the higher-level string-seeded API.
 })

@@ -1,7 +1,10 @@
 import type { MirrorState } from '../../components/types'
 
 export function mirrorMarkup(state: MirrorState): string {
-  const crack = state === 'cracked' ? '<path d="M90 22 72 58 102 84 80 128 108 150" stroke="var(--mirror-crack)" stroke-width="5" fill="none" stroke-linecap="round"/>' : ''
+  const crack =
+    state === 'cracked'
+      ? '<path d="M90 22 72 58 102 84 80 128 108 150" stroke="var(--mirror-crack)" stroke-width="5" fill="none" stroke-linecap="round"/>'
+      : ''
   const cloud =
     state === 'clouded'
       ? '<ellipse cx="92" cy="86" rx="54" ry="24" fill="var(--mirror-cloud)" opacity="0.45"/><ellipse cx="96" cy="76" rx="38" ry="16" fill="var(--mirror-cloud)" opacity="0.4"/>'

@@ -1,0 +1,5 @@
+dist
+node_modules
+coverage
+package-lock.json
+src/lib/mlkem/__tests__/kat-vectors.json
