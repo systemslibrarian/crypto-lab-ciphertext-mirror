@@ -2,7 +2,7 @@
 
 ## 1. What It Is
 
-This demo is a browser-based educational replay centered on ML-KEM decapsulation behavior, including K-PKE flows and the FO re-encryption comparison path modeled in the code. It illustrates how simulated leakage and oracle behavior can affect key-recovery experiments, and how simulated blinding changes observed outcomes in the same environment. The primitive family is post-quantum public-key cryptography, implemented here as inspectable TypeScript simulation code rather than production cryptographic software. It is intended for mechanism understanding and comparison, not for real-world secure deployment or attack tooling.
+This demo is a browser-based educational replay centered on ML-KEM decapsulation behavior, including the K-PKE flow and the FO re-encryption comparison path. The cryptographic core is a **real FIPS 203 implementation** — Keccak/SHA-3, the matrix generation, the ML-KEM NTT, CBD sampling, compression, and the Fujisaki–Okamoto transform — written in inspectable TypeScript and **validated byte-for-byte against the official NIST known-answer vectors** for ML-KEM-512/768/1024. On top of that core, the three cards run *simulated* side-channel leakage, oracle, and blinding experiments to illustrate how the cited attacks and defenses behave. It is intended for mechanism understanding; the core is written for teaching, not constant-time hardened or CAVP-certified, so it is not for real-world deployment or attack tooling.
 
 ## 2. When to Use It
 
@@ -46,15 +46,20 @@ One of 60+ live browser demos at [systemslibrarian.github.io/crypto-lab](https:/
 
 ### Reality & Limitations
 
-- This repository is a didactic mirror with seeded synthetic leakage and oracle abstractions.
+- The ML-KEM core is real and NIST-KAT-validated; the **side-channel, oracle, and fault
+  experiments layered on top are seeded simulations**, not physical measurements.
 - It does not claim exploit success rates, trace budgets, or break costs on physical devices.
-- Paper-specific math and implementation details are summarized at mechanism level, not fully reproduced.
+- Paper-specific math is reproduced at mechanism level (real higher-order CPA, real
+  belief-propagation LDPC decoding, real NTT arithmetic) but not every asymptotic constant.
 
 ## Why this demo is trustworthy
 
+- The cryptographic core passes the official FIPS 203 known-answer vectors for all three
+  parameter sets (KeyGen, Encaps, Decaps, implicit rejection) — see `kat.test.ts`.
+- Keccak is validated against the FIPS 202 SHA-3 / SHAKE example values.
 - Every card includes a paper citation, a simulation mapping, and an explicit omission list.
-- The code is inspectable TypeScript with deterministic seeds for reproducible replay behavior.
-- The UI intentionally separates evidence from interpretation and from non-claims.
+- The code is inspectable TypeScript with deterministic seeds for reproducible replays, and
+  the UI separates evidence from interpretation and from non-claims.
 
 ---
 

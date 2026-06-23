@@ -32,7 +32,8 @@ const cards: CardInfo[] = [
     hook: 'Even a noisy, imperfect oracle is enough.',
     mirror: 'clouded',
     scholar: {
-      title: 'Unlocking the True Potential of Decryption Failure Oracles: A Hybrid Adaptive-LDPC Attack on ML-KEM Using Imperfect Oracles',
+      title:
+        'Unlocking the True Potential of Decryption Failure Oracles: A Hybrid Adaptive-LDPC Attack on ML-KEM Using Imperfect Oracles',
       year: 2026,
       eprintId: '070',
       authorLine: 'Guo, Nabokov, Johansson',
@@ -67,6 +68,8 @@ export function renderCardGrid(onOpen: (slug: CardSlug) => void, selected?: Card
     }
 
     const mirror = renderMirror(card.mirror)
+    // Decorative state illustration; the hook text already conveys the meaning.
+    mirror.setAttribute('aria-hidden', 'true')
     const badge = renderScholarBadge(card.scholar)
     const title = document.createElement('h2')
     title.textContent = card.title

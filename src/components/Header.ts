@@ -4,9 +4,9 @@ export function renderHeader(): HTMLElement {
   header.innerHTML = `
     <div class="cl-header-inner">
       <div class="cl-brand">
-        <div class="cl-badge" aria-label="Crypto Lab">CL</div>
+        <div class="cl-badge" aria-hidden="true">CL</div>
         <div>
-          <p class="cl-title">CRYPTO LAB</p>
+          <h1 class="cl-title">CRYPTO LAB</h1>
           <p class="cl-subtitle">Ciphertext Mirror</p>
         </div>
       </div>

@@ -2,8 +2,9 @@ import type { MlKemLevel } from './types'
 
 export function renderParamSelector(initial: MlKemLevel, onChange: (level: MlKemLevel) => void): HTMLElement {
   const wrap = document.createElement('label')
+  wrap.className = 'control-field control-field-select'
   wrap.innerHTML = `
-    <span>ML-KEM level:</span>
+    <span class="control-label">ML-KEM level</span>
     <select>
       <option value="512">ML-KEM-512</option>
       <option value="768">ML-KEM-768</option>
