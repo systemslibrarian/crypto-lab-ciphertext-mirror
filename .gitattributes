@@ -1,0 +1,12 @@
+# Normalize all text files to LF in the repository and on checkout, so the
+# Prettier `format:check` gate behaves identically on Windows, macOS, and CI.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

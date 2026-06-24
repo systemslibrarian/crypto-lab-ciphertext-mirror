@@ -37,8 +37,9 @@
   align-content: center;
 }
 
-.paper-card h2 {
+.paper-card h3 {
   margin: 0;
+  font-size: 1.05rem;
 }
 
 .paper-card p {
@@ -73,7 +74,7 @@
 
 .open-btn {
   border: 1px solid var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
   background: transparent;
   border-radius: 0.55rem;
   padding: 0.44rem 0.74rem;
@@ -139,7 +140,7 @@
 }
 
 .replay-kicker {
-  color: var(--accent) !important;
+  color: var(--accent-text) !important;
   font-size: 0.82rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -223,6 +224,9 @@
 .output-details > summary {
   cursor: pointer;
   padding: 0.55rem 0.75rem;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
   font-weight: 600;
   border-radius: 0.7rem;
   list-style: none;
@@ -320,10 +324,13 @@
 
 .verdict-label {
   margin: 0;
-  font-size: 0.72rem;
+  /* This label is the non-color cue for the verdict tone (WCAG 1.4.1), so it uses full
+     foreground contrast and a legible size rather than muted small text. */
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .verdict-headline {
@@ -450,6 +457,18 @@
   color: var(--text-muted);
 }
 
+.bar-chart-best {
+  align-self: flex-start;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.05rem 0.32rem;
+  border-radius: 999px;
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+}
+
 .bar-chart-legend {
   list-style: none;
   margin: 0.1rem 0 0;
@@ -487,7 +506,7 @@
   border: 1px solid color-mix(in oklab, var(--border-color) 50%, transparent);
 }
 
-@media (max-width: 520px) {
+@media (max-width: 640px) {
   .bar-chart-row {
     grid-template-columns: 2rem 1fr;
   }
@@ -513,12 +532,25 @@
 
 .card-setup input,
 .card-setup select {
-  min-height: 2.25rem;
+  min-height: 2.75rem;
+  /* >=16px prevents iOS Safari from auto-zooming the viewport on focus. */
+  font-size: max(16px, 1rem);
+  /* Allow the field to shrink and long seed strings to wrap instead of overflowing. */
+  min-width: 0;
+  max-width: 100%;
   border-radius: 0.45rem;
   border: 1px solid var(--border-color);
   padding: 0.3rem 0.5rem;
   background: var(--surface-alt);
   color: var(--text);
+}
+
+.card-setup input:disabled,
+.card-setup select:disabled,
+.open-btn:disabled,
+.control-field-slider input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .reality-panel {
@@ -595,15 +627,20 @@
 
   .replay-close-btn {
     width: 100%;
+    /* Keep "Close replay" reachable at the top on phones instead of below the whole
+       multi-paragraph replay intro. */
+    order: -1;
   }
 }
 
 /* Skip link: visually hidden until focused */
 .skip-link {
-  position: absolute;
+  position: fixed;
   left: 0.5rem;
   top: -3rem;
-  z-index: 50;
+  /* Must sit above the sticky shared topbar (z-index: 1000) or the focused skip link
+     is painted behind it and a keyboard user can never see or use it. */
+  z-index: 1001;
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--accent);
@@ -646,7 +683,8 @@
 
 .control-field-slider input[type='range'] {
   width: 100%;
-  min-height: 1.6rem;
+  /* 44px touch target for the slider (WCAG 2.5.8). */
+  min-height: 2.75rem;
   accent-color: var(--accent);
 }
 
@@ -710,6 +748,9 @@
   cursor: pointer;
   font-weight: 600;
   padding: 0.55rem 0;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
   list-style: none;
   display: flex;
   align-items: center;
@@ -809,7 +850,7 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .takeaway-body {

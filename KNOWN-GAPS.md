@@ -4,11 +4,15 @@ This project is intentionally honest about simulation boundaries. It models mech
 
 ## Card 1 - 2024/060 Masked comparison leakage
 
-- Models the attack as a higher-order CPA: the masked decision bit is split into
-  d+1 Boolean shares, each leaks its centered Hamming weight plus Gaussian noise, and
+- Models the attack as a higher-order CPA: the masked decision bit (a real bit of the
+  ML-KEM shared secret produced by a genuine keygen/encaps/decaps round-trip) is split
+  into d+1 Boolean shares, each leaks its centered Hamming weight plus Gaussian noise, and
   the distinguisher is the product of the share leakages (the optimal combiner for
   Boolean masking). This correctly reproduces the order-vs-noise coupling — trace cost
   grows ~exponentially in masking order, and the gap between orders widens with noise.
+- The chosen-ciphertext index that selects which secret bit each trace observes is drawn
+  from the seeded PRG, so runs stay reproducible; the recovered value is real key material,
+  not a synthetic coin.
 - Uses an idealized single-bit leakage model, not real silicon power/EM captures, and
   omits cycle-accurate microarchitectural effects, alignment drift, and register reuse.
 - Reported trace counts apply a fixed pedagogical scale factor (`TRACE_SCALE`, see
@@ -35,6 +39,9 @@ This project is intentionally honest about simulation boundaries. It models mech
   runs on both paths, and the blinded path's correlation collapses because the fresh
   random field element decorrelates the leakage from the attacker's hypothesis. The
   reduction is produced by the masking, not by any hardcoded scaling factor.
+- The distinguisher is evaluated at the correct-key hypothesis (it shows whether that
+  hypothesis leaks); a full CPA would rank every candidate key. It also leaks the low byte
+  (`product & 0xff`) of the 12-bit field element as a single-trace Hamming-weight model.
 - Targets one NTT coefficient pair rather than instrumenting the whole NTT/CRT pipeline.
 - Uses a simplified single-bit fault model, not multi-fault/adaptive attacker campaigns,
   and omits real compiler lowering / instruction scheduling behavior.

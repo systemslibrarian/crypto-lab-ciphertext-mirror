@@ -46,6 +46,24 @@ describe('FIPS 203 ML-KEM core', () => {
     expect(Array.from(rejected)).not.toEqual(Array.from(sharedSecret))
   })
 
+  test('implicit rejection is deterministic (same tampered ciphertext → same secret)', () => {
+    // The rejection secret is J(z‖c); it must depend only on z and c, so repeated
+    // decapsulation of the same invalid ciphertext must return the identical value.
+    const { ek, dk } = mlkemKeyGenInternal(768, seedBytes('drd', 32), seedBytes('zrd', 32))
+    const { ciphertext } = mlkemEncapsInternal(768, ek, seedBytes('mrd', 32))
+    const tampered = ciphertext.slice()
+    tampered[5] = (tampered[5] ?? 0) ^ 0x01
+    const first = mlkemDecapsInternal(768, dk, tampered)
+    const second = mlkemDecapsInternal(768, dk, tampered)
+    expect(Array.from(first)).toEqual(Array.from(second))
+
+    // A different tampering location yields a different rejection secret (J depends on c).
+    const other = ciphertext.slice()
+    other[6] = (other[6] ?? 0) ^ 0x01
+    const otherSecret = mlkemDecapsInternal(768, dk, other)
+    expect(Array.from(otherSecret)).not.toEqual(Array.from(first))
+  })
+
   test('deterministic for fixed seeds', () => {
     const a = mlkemKeyGenInternal(768, seedBytes('dd', 32), seedBytes('zz', 32))
     const b = mlkemKeyGenInternal(768, seedBytes('dd', 32), seedBytes('zz', 32))

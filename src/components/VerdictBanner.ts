@@ -32,7 +32,9 @@ const LABELS: Record<VerdictTone, string> = {
 export function renderVerdictBanner(opts: VerdictBannerOptions): HTMLElement {
   const wrap = document.createElement('section')
   wrap.className = `verdict-banner verdict-${opts.tone}`
-  wrap.setAttribute('role', 'status')
+  // The result outcome is announced once via the card's polite run-status live region;
+  // marking the banner role="status" too would double-announce the whole verdict.
+  wrap.setAttribute('aria-label', `Verdict: ${LABELS[opts.tone]}`)
 
   const head = document.createElement('div')
   head.className = 'verdict-head'

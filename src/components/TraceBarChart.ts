@@ -88,6 +88,13 @@ export function renderTraceBarChart(opts: TraceBarChartOptions): HTMLElement {
     const main = document.createElement('strong')
     main.textContent = compactNumber(row.value)
     value.append(main)
+    if (row.highlight) {
+      // Text marker so the highlighted row isn't distinguished by color alone (WCAG 1.4.1).
+      const badge = document.createElement('span')
+      badge.className = 'bar-chart-best'
+      badge.textContent = 'best'
+      value.append(badge)
+    }
     if (row.caption) {
       const cap = document.createElement('span')
       cap.className = 'bar-chart-caption'

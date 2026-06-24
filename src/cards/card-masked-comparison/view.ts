@@ -246,6 +246,7 @@ export function renderMaskedComparisonCardView(): HTMLElement {
     compareToggle.disabled = true
     sigmaCompareInput.disabled = true
     resultMount.classList.add('is-running')
+    resultMount.setAttribute('aria-busy', 'true')
     run.textContent = 'Running replay...'
 
     try {
@@ -420,14 +421,15 @@ export function renderMaskedComparisonCardView(): HTMLElement {
       })
       resultMount.append(details)
 
-      runStatus.textContent = 'Replay complete.'
+      runStatus.textContent = `Replay complete. ${verdictA.headline}.`
     } catch (error) {
       console.error('Masked comparison replay failed', error)
       resultMount.innerHTML =
         '<section class="output-block"><p class="run-status">The replay hit an unexpected error and was halted. Adjust the parameters and run again.</p></section>'
-      runStatus.textContent = 'Replay failed.'
+      runStatus.textContent = 'Replay failed. Adjust the parameters and run again.'
     } finally {
       resultMount.classList.remove('is-running')
+      resultMount.setAttribute('aria-busy', 'false')
       seedInput.disabled = false
       sigmaInput.disabled = false
       bitInput.disabled = false

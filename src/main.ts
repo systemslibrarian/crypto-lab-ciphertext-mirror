@@ -66,39 +66,6 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function setupThemeToggle(): void {
-  const toggle = header.querySelector<HTMLButtonElement>('.cl-theme-toggle')
-  if (!toggle) {
-    return
-  }
-
-  const safeSetTheme = (theme: 'light' | 'dark'): void => {
-    try {
-      localStorage.setItem('theme', theme)
-    } catch (_err) {
-      // Ignore storage write failures in restricted browsing contexts.
-    }
-  }
-
-  const sync = (): void => {
-    const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
-    toggle.textContent = isDark ? '🌙' : '☀️'
-    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode')
-    toggle.setAttribute('aria-pressed', String(isDark))
-    toggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode')
-  }
-
-  toggle.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
-    const next = current === 'dark' ? 'light' : 'dark'
-    document.documentElement.setAttribute('data-theme', next)
-    safeSetTheme(next)
-    sync()
-  })
-
-  sync()
-}
-
 function currentCard(): CardSlug | null {
   const params = new URLSearchParams(window.location.search)
   const card = params.get('card')
@@ -204,5 +171,4 @@ function render(scrollToReplay = false): void {
 window.addEventListener('popstate', () => {
   render(false)
 })
-setupThemeToggle()
 render()

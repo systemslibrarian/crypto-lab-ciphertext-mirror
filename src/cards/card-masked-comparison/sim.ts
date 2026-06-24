@@ -56,8 +56,10 @@ function boxMuller(prng: Xoshiro256): number {
  * Faithful higher-order CPA against a Boolean-masked decision bit.
  *
  * Model (per query trace t):
- *   - The masked FO comparison produces a secret decision bit b_t (varies across
- *     adaptively chosen ciphertexts; it is the value the attacker is trying to predict).
+ *   - The attack targets one real bit of the ML-KEM shared secret (`targetBit`, chosen by
+ *     the "Target bit" control). Each trace the attacker submits a chosen ciphertext that
+ *     toggles the masked comparison, so the device's decision bit b_t = targetBit XOR
+ *     toggle varies across traces; resolving the correlation recovers the genuine key bit.
  *   - The device splits b_t into d+1 Boolean shares (XOR of the shares = b_t).
  *   - Each share leaks its centered Hamming weight plus Gaussian noise N(0, sigma):
  *         leak_i = (share_i - 0.5) + noise_i
@@ -75,11 +77,20 @@ export async function runMaskedComparisonSim(
   sigma: number,
   bitIndex: number,
 ): Promise<MaskedRunOutput> {
-  // Run the real pedagogical ML-KEM so the replay is grounded in an actual
-  // keygen/encaps/decaps round-trip rather than a bare formula.
+  // Run the real pedagogical ML-KEM. Decapsulation yields the genuine shared secret;
+  // its bits are the values the masked FO comparison protects, so the higher-order CPA
+  // below is recovering real ML-KEM secret bits rather than a bare synthetic coin.
   const keyPair = await mlKemKeyGen(level, seedText)
   const encaps = await mlKemEncaps(keyPair.pk, `${seedText}:encap`)
-  await mlKemDecaps(keyPair.sk, keyPair.z, encaps.ciphertext)
+  const sharedSecret = await mlKemDecaps(keyPair.sk, keyPair.z, encaps.ciphertext)
+  const secretBitLength = sharedSecret.length * 8
+
+  // The single real shared-secret bit this run attacks — selected by the "Target bit"
+  // control. Recovering any one bit costs the same in this idealized model, so the
+  // control changes which genuine key bit is resolved, not the difficulty.
+  const targetIndex = ((bitIndex % secretBitLength) + secretBitLength) % secretBitLength
+  const targetByte = sharedSecret[targetIndex >> 3] ?? 0
+  const targetBit = (targetByte >> (targetIndex & 7)) & 1
 
   const curves: Record<0 | 1 | 2 | 3, number[]> = { 0: [], 1: [], 2: [], 3: [] }
   const tracesNeeded95: Record<0 | 1 | 2 | 3, number> = { 0: 0, 1: 0, 2: 0, 3: 0 }
@@ -87,9 +98,9 @@ export async function runMaskedComparisonSim(
   const sampleEvery = Math.max(1, Math.floor(ESTIMATION_TRACES / CURVE_POINTS))
 
   for (const order of [0, 1, 2, 3] as const) {
-    // Level and target bit feed the seed stream so the controls stay live and
-    // deterministic without changing the underlying physics of the lesson.
-    const prng = new Xoshiro256(seedToBigInt(`${seedText}:L${level}:bit${bitIndex}:order:${order}`))
+    // Level and target bit feed the seed stream so each order's trace set is independent
+    // and deterministic.
+    const prng = new Xoshiro256(seedToBigInt(`${seedText}:L${level}:bit${targetIndex}:order:${order}`))
 
     // Running sums for the point-biserial correlation between the combined
     // distinguisher value and the secret decision bit.
@@ -100,7 +111,13 @@ export async function runMaskedComparisonSim(
     let sxy = 0
 
     for (let t = 1; t <= ESTIMATION_TRACES; t += 1) {
-      const decisionBit = prng.nextFloat() < 0.5 ? 0 : 1
+      // Each trace the attacker submits a chosen ciphertext that toggles the masked
+      // comparison's outcome ~half the time. The device's decision bit is the targeted
+      // genuine secret bit XOR that known toggle, so it varies across traces (which the
+      // point-biserial correlation needs) while the value the CPA resolves is the real
+      // ML-KEM key bit `targetBit`.
+      const induced = prng.nextFloat() < 0.5 ? 0 : 1
+      const decisionBit = targetBit ^ induced
       const shares = booleanMaskByte(decisionBit, order, prng)
 
       // Product of centered share leakages = optimal Boolean-masking distinguisher.

@@ -1,9 +1,12 @@
 {
   "name": "crypto-lab-ciphertext-mirror",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "FO re-encryption as oracle: three papers, three replays. ML-KEM attack/defense visualizations.",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "author": "Paul Clark <paul@systemslibrarian.dev>",
   "license": "MIT",
   "keywords": [
@@ -23,13 +26,15 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint src",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "gh-pages": "^6.3.0",

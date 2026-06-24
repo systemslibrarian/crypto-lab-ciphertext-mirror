@@ -46,9 +46,11 @@ function correlation(acc: CorrAcc, n: number): number {
 /**
  * Matched A/B replay of NTT+CRT RNR blinding (ePrint 2025/181).
  *
- * Side-channel facet — a real CPA on the genuine ML-KEM NTT base-case multiply
- * (FIPS 203 Algorithm 12): the secret coefficient pair (ŝ0, ŝ1) is multiplied by an
- * attacker-influenced input pair (û0, û1) that varies each trace.
+ * Side-channel facet — a correlation power-analysis (CPA) distinguisher, evaluated at
+ * the correct-key hypothesis, on the genuine ML-KEM NTT base-case multiply (FIPS 203
+ * Algorithm 12): the secret coefficient pair (ŝ0, ŝ1) is multiplied by an
+ * attacker-influenced input pair (û0, û1) that varies each trace. (A full CPA would rank
+ * every candidate key; here we track the correct hypothesis to show whether it leaks.)
  *   - Unblinded: the device leaks HW(product). The attacker predicts that same product
  *     under the correct key, so the correlation climbs — the secret leaks.
  *   - Blinded: RNR adds a fresh random field element to the product before it is

@@ -71,7 +71,8 @@ export function renderCardGrid(onOpen: (slug: CardSlug) => void, selected?: Card
     // Decorative state illustration; the hook text already conveys the meaning.
     mirror.setAttribute('aria-hidden', 'true')
     const badge = renderScholarBadge(card.scholar)
-    const title = document.createElement('h2')
+    // h3: these cards sit under the "Choose a paper replay" <h2> on the landing page.
+    const title = document.createElement('h3')
     title.textContent = card.title
     const hook = document.createElement('p')
     hook.textContent = card.hook

@@ -174,6 +174,7 @@ export function renderRnrBlindingCardView(): HTMLElement {
     sigmaInput.disabled = true
     faultToggle.disabled = true
     resultMount.classList.add('is-running')
+    resultMount.setAttribute('aria-busy', 'true')
     run.textContent = 'Running replay...'
 
     try {
@@ -228,7 +229,9 @@ export function renderRnrBlindingCardView(): HTMLElement {
 
       const grid = document.createElement('div')
       grid.style.display = 'grid'
-      grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(260px, 1fr))'
+      // min(100%, 220px) keeps the two panes side-by-side on wide screens but never forces
+      // a column wider than the container (which would scroll horizontally on small phones).
+      grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))'
       grid.style.gap = '0.75rem'
 
       // Shared scale so the blinded curve visibly reads as flat against the unblinded one.
@@ -262,14 +265,15 @@ export function renderRnrBlindingCardView(): HTMLElement {
       compare.append(grid)
       resultMount.append(compare)
 
-      runStatus.textContent = 'Replay complete.'
+      runStatus.textContent = `Replay complete. ${verdict.headline}.`
     } catch (error) {
       console.error('RNR blinding replay failed', error)
       resultMount.innerHTML =
         '<section class="output-block"><p class="run-status">The replay hit an unexpected error and was halted. Adjust the parameters and run again.</p></section>'
-      runStatus.textContent = 'Replay failed.'
+      runStatus.textContent = 'Replay failed. Adjust the parameters and run again.'
     } finally {
       resultMount.classList.remove('is-running')
+      resultMount.setAttribute('aria-busy', 'false')
       seedInput.disabled = false
       sigmaInput.disabled = false
       faultToggle.disabled = false

@@ -177,6 +177,7 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
     pErrInput.disabled = true
     alphaInput.disabled = true
     resultMount.classList.add('is-running')
+    resultMount.setAttribute('aria-busy', 'true')
     run.textContent = 'Running replay...'
 
     try {
@@ -244,14 +245,15 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
       stripCard.append(stripTitle, renderNodeStrip(confidences))
       resultMount.append(stripCard)
 
-      runStatus.textContent = 'Replay complete.'
+      runStatus.textContent = `Replay complete. ${verdict.headline}.`
     } catch (error) {
       console.error('Imperfect DF-oracle replay failed', error)
       resultMount.innerHTML =
         '<section class="output-block"><p class="run-status">The replay hit an unexpected error and was halted. Adjust the parameters and run again.</p></section>'
-      runStatus.textContent = 'Replay failed.'
+      runStatus.textContent = 'Replay failed. Adjust the parameters and run again.'
     } finally {
       resultMount.classList.remove('is-running')
+      resultMount.setAttribute('aria-busy', 'false')
       seedInput.disabled = false
       pErrInput.disabled = false
       alphaInput.disabled = false
