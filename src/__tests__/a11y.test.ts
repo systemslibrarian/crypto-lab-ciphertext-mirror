@@ -11,7 +11,6 @@ import axe from 'axe-core'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { renderCardGrid } from '../components/CardGrid'
 import { renderConceptPrimer } from '../components/ConceptPrimer'
-import { renderHeader } from '../components/Header'
 import { renderImperfectDfOracleCard } from '../cards/card-imperfect-df-oracle'
 import { renderMaskedComparisonCard } from '../cards/card-masked-comparison'
 import { renderRnrBlindingCard } from '../cards/card-rnr-blinding'
@@ -40,11 +39,10 @@ function mountPage(): HTMLElement {
   skip.href = '#app'
   skip.textContent = 'Skip to main content'
 
-  const header = renderHeader()
   const main = document.createElement('main')
   main.id = 'app'
 
-  document.body.append(skip, header, main)
+  document.body.append(skip, main)
   return main
 }
 
