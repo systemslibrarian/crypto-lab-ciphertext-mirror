@@ -1,6 +1,5 @@
 import { renderCardGrid } from './components/CardGrid'
 import { renderConceptPrimer } from './components/ConceptPrimer'
-import { renderHeader } from './components/Header'
 import { renderMaskedComparisonCard } from './cards/card-masked-comparison'
 import { renderImperfectDfOracleCard } from './cards/card-imperfect-df-oracle'
 import { renderRnrBlindingCard } from './cards/card-rnr-blinding'
@@ -54,12 +53,11 @@ skipLink.className = 'skip-link'
 skipLink.href = '#app'
 skipLink.textContent = 'Skip to main content'
 
-const header = renderHeader()
 const main = document.createElement('main')
 main.id = 'app'
 main.tabIndex = -1
 
-page.append(skipLink, header, main)
+page.append(skipLink, main)
 root.append(page)
 
 function prefersReducedMotion(): boolean {
