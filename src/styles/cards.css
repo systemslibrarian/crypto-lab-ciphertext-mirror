@@ -6,7 +6,7 @@
 }
 
 .paper-card {
-  background: var(--surface);
+  background-color: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: 0.9rem;
   padding: 1rem;
@@ -49,7 +49,7 @@
 
 .paper-card-active {
   border-color: color-mix(in oklab, var(--accent) 70%, var(--border-color));
-  background: color-mix(in oklab, var(--surface) 88%, var(--accent));
+  background-color: color-mix(in oklab, var(--surface) 88%, var(--accent));
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
 }
 
@@ -63,19 +63,19 @@
   padding: 0.22rem 0.55rem;
   color: var(--text);
   text-decoration: none;
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
 }
 
 .paper-pill {
   border-radius: 999px;
   padding: 0.08rem 0.45rem;
-  background: color-mix(in oklab, var(--accent) 24%, transparent);
+  background-color: color-mix(in oklab, var(--accent) 24%, transparent);
 }
 
 .open-btn {
   border: 1px solid var(--accent);
   color: var(--accent-text);
-  background: transparent;
+  background-color: transparent;
   border-radius: 0.55rem;
   padding: 0.44rem 0.74rem;
   cursor: pointer;
@@ -90,7 +90,7 @@
   border: 1px solid var(--border-color);
   border-radius: 0.9rem;
   padding: 0.85rem;
-  background: var(--surface);
+  background-color: var(--surface);
   display: grid;
   gap: 0.75rem;
 }
@@ -113,7 +113,7 @@
   margin-top: 0.9rem;
   border: 1px solid var(--border-color);
   border-radius: 1rem;
-  background: color-mix(in oklab, var(--surface) 90%, var(--surface-alt));
+  background-color: color-mix(in oklab, var(--surface) 90%, var(--surface-alt));
   padding: 0.85rem;
   display: grid;
   gap: 0.75rem;
@@ -122,7 +122,7 @@
 .replay-header {
   border: 1px solid var(--border-color);
   border-radius: 0.8rem;
-  background: var(--surface);
+  background-color: var(--surface);
   padding: 0.75rem;
   display: flex;
   justify-content: space-between;
@@ -165,7 +165,7 @@
   border: 1px solid var(--border-color);
   border-radius: 0.8rem;
   padding: 0.65rem;
-  background: color-mix(in oklab, var(--surface) 88%, var(--surface-alt));
+  background-color: color-mix(in oklab, var(--surface) 88%, var(--surface-alt));
 }
 
 .output-block.is-running {
@@ -194,7 +194,7 @@
   border: 1px solid var(--border-color);
   border-radius: 0.7rem;
   padding: 0.65rem 0.75rem;
-  background: color-mix(in oklab, var(--surface) 86%, var(--surface-alt));
+  background-color: color-mix(in oklab, var(--surface) 86%, var(--surface-alt));
   color: var(--text);
 }
 
@@ -206,10 +206,6 @@
 .output-mount {
   display: grid;
   gap: 0.75rem;
-}
-
-.output-mount.is-running {
-  opacity: 0.7;
 }
 
 .output-placeholder p {
@@ -259,27 +255,27 @@
   padding: 0.85rem 1rem;
   display: grid;
   gap: 0.55rem;
-  background: color-mix(in oklab, var(--surface) 85%, var(--surface-alt));
+  background-color: color-mix(in oklab, var(--surface) 85%, var(--surface-alt));
 }
 
 .verdict-banner.verdict-good {
   border-left-color: var(--success);
-  background: color-mix(in oklab, var(--surface) 80%, var(--success) 10%);
+  background-color: color-mix(in oklab, var(--surface) 80%, var(--success) 10%);
 }
 
 .verdict-banner.verdict-warn {
   border-left-color: var(--warning);
-  background: color-mix(in oklab, var(--surface) 80%, var(--warning) 12%);
+  background-color: color-mix(in oklab, var(--surface) 80%, var(--warning) 12%);
 }
 
 .verdict-banner.verdict-bad {
   border-left-color: var(--danger);
-  background: color-mix(in oklab, var(--surface) 80%, var(--danger) 12%);
+  background-color: color-mix(in oklab, var(--surface) 80%, var(--danger) 12%);
 }
 
 .verdict-banner.verdict-floor {
   border-left-color: var(--mirror-cloud);
-  background: color-mix(in oklab, var(--surface) 80%, var(--mirror-cloud) 14%);
+  background-color: color-mix(in oklab, var(--surface) 80%, var(--mirror-cloud) 14%);
 }
 
 .verdict-banner.verdict-neutral {
@@ -305,21 +301,23 @@
 }
 
 .verdict-good .verdict-icon {
-  background: var(--success);
+  background-color: var(--success);
 }
 .verdict-warn .verdict-icon {
-  background: var(--warning);
+  background-color: var(--warning);
   color: #1f1500;
 }
 .verdict-bad .verdict-icon {
-  background: var(--danger);
+  background-color: var(--danger);
 }
 .verdict-floor .verdict-icon {
-  background: var(--mirror-cloud);
+  background-color: var(--mirror-cloud);
   color: #131a1d;
 }
 .verdict-neutral .verdict-icon {
-  background: var(--accent);
+  /* --accent-text, not --accent: the light-theme accent (#2a9d8f) only gives the
+     light icon glyph ~3.3:1; the darker text token clears 4.5:1 in both themes. */
+  background-color: var(--accent-text);
 }
 
 .verdict-label {
@@ -351,7 +349,7 @@
   gap: 0.5rem 0.9rem;
   margin: 0.25rem 0 0;
   padding: 0.55rem 0.65rem;
-  background: color-mix(in oklab, var(--surface) 90%, var(--surface-alt));
+  background-color: color-mix(in oklab, var(--surface) 90%, var(--surface-alt));
   border-radius: 0.6rem;
   border: 1px solid color-mix(in oklab, var(--border-color) 70%, transparent);
 }
@@ -374,7 +372,7 @@
   margin: 0;
   padding: 0.5rem 0.65rem;
   border-radius: 0.55rem;
-  background: color-mix(in oklab, var(--surface-alt) 70%, var(--surface));
+  background-color: color-mix(in oklab, var(--surface-alt) 70%, var(--surface));
   color: var(--text);
   font-size: 0.92rem;
 }
@@ -413,7 +411,7 @@
   position: relative;
   height: 0.95rem;
   border-radius: 999px;
-  background: color-mix(in oklab, var(--surface-alt) 70%, var(--bg));
+  background-color: color-mix(in oklab, var(--surface-alt) 70%, var(--bg));
   overflow: hidden;
   border: 1px solid color-mix(in oklab, var(--border-color) 60%, transparent);
 }
@@ -438,7 +436,7 @@
   top: -2px;
   bottom: -2px;
   width: 2px;
-  background: color-mix(in oklab, var(--text-muted) 60%, transparent);
+  background-color: color-mix(in oklab, var(--text-muted) 60%, transparent);
   pointer-events: none;
 }
 
@@ -490,7 +488,7 @@
   display: inline-block;
   width: 2px;
   height: 0.85rem;
-  background: color-mix(in oklab, var(--text-muted) 60%, transparent);
+  background-color: color-mix(in oklab, var(--text-muted) 60%, transparent);
 }
 
 /* Node strip (DF card) */
@@ -541,8 +539,17 @@
   border-radius: 0.45rem;
   border: 1px solid var(--border-color);
   padding: 0.3rem 0.5rem;
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
   color: var(--text);
+}
+
+.card-setup select {
+  /* Custom-styled select: hide the native chevron and draw a theme-neutral one. */
+  appearance: none;
+  padding-right: 1.8rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%238b949e' stroke-width='2' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
 }
 
 .card-setup input:disabled,
@@ -586,7 +593,7 @@
   height: auto;
   border-radius: 0.6rem;
   border: 1px solid var(--border-color);
-  background: color-mix(in oklab, var(--surface-alt) 88%, var(--bg));
+  background-color: color-mix(in oklab, var(--surface-alt) 88%, var(--bg));
 }
 
 .compare-pane h3 {
@@ -641,7 +648,7 @@
   /* Must sit above the sticky shared topbar (z-index: 1000) or the focused skip link
      is painted behind it and a keyboard user can never see or use it. */
   z-index: 1001;
-  background: var(--surface);
+  background-color: var(--surface);
   color: var(--text);
   border: 1px solid var(--accent);
   border-radius: 0.5rem;
@@ -740,7 +747,7 @@
 .concept-primer {
   border: 1px solid var(--border-color);
   border-radius: 0.9rem;
-  background: color-mix(in oklab, var(--surface) 88%, var(--accent));
+  background-color: color-mix(in oklab, var(--surface) 88%, var(--accent));
   padding: 0.4rem 0.9rem;
 }
 
@@ -773,7 +780,7 @@
 }
 
 .concept-primer-badge {
-  background: var(--accent);
+  background-color: var(--accent);
   color: #05110f;
   border-radius: 999px;
   padding: 0.1rem 0.55rem;
@@ -838,7 +845,7 @@
   border-left-width: 5px;
   border-left-color: var(--accent);
   border-radius: 0.7rem;
-  background: color-mix(in oklab, var(--surface) 82%, var(--accent) 10%);
+  background-color: color-mix(in oklab, var(--surface) 82%, var(--accent) 10%);
   padding: 0.7rem 0.85rem;
   display: grid;
   gap: 0.3rem;

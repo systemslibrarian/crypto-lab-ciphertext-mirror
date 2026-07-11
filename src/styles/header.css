@@ -1,7 +1,7 @@
 .cl-header {
   position: relative;
   border-bottom: 1px solid var(--border-color);
-  background: color-mix(in oklab, var(--surface) 92%, var(--accent));
+  background-color: color-mix(in oklab, var(--surface) 92%, var(--accent));
   position: sticky;
   top: 0;
   z-index: 10;
@@ -28,7 +28,7 @@
   width: 2.1rem;
   height: 2.1rem;
   border-radius: 0.4rem;
-  background: var(--accent);
+  background-color: var(--accent);
   color: #05110f;
   font-weight: 700;
   display: grid;
@@ -60,7 +60,7 @@
 .cl-link-btn,
 .cl-theme-toggle {
   border: 1px solid var(--border-color);
-  background: var(--surface);
+  background-color: var(--surface);
   color: var(--text);
   border-radius: 0.5rem;
   padding: 0.42rem 0.66rem;
@@ -84,7 +84,7 @@
 .cl-link-btn:hover,
 .cl-theme-toggle:hover {
   border-color: var(--accent-hover);
-  background: var(--surface-alt);
+  background-color: var(--surface-alt);
 }
 
 @media (max-width: 620px) {

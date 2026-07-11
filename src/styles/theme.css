@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg: #f6f7f4;
   --surface: #fffdf7;
   --surface-alt: #eef1e8;
@@ -19,6 +20,7 @@
 }
 
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --bg: #101a18;
   --surface: #182422;
   --surface-alt: #223130;
@@ -50,6 +52,9 @@ body {
     color-mix(in oklab, var(--surface) 84%, var(--accent)),
     var(--bg) 50%
   );
+  /* Explicit canvas color: the gradient shorthand alone leaves background-color
+     transparent, which WebKit reports as a transparent page background. */
+  background-color: var(--bg);
   color: var(--text);
   font-family: 'IBM Plex Sans', 'Segoe UI', Tahoma, sans-serif;
   min-height: 100%;
