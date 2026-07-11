@@ -27,13 +27,16 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:a11y": "playwright test",
     "lint": "eslint src",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.39.0",
+    "@playwright/test": "^1.61.1",
     "@vitest/coverage-v8": "^2.1.9",
     "axe-core": "^4.12.1",
     "eslint": "^9.39.4",

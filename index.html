@@ -64,6 +64,10 @@
   .cl-badge{
     flex:0 0 auto;display:grid;place-items:center;width:40px;height:40px;
     border:1.5px solid var(--accent, #35d6bb);border-radius:10px;
+    /* Explicit dark background so contrast tooling samples the bar color behind
+       the badge text, not the accent-colored border (which axe otherwise blends
+       in and reports as a low-contrast background). */
+    background-color:#0b1512;
     color:var(--cl-ink);font-weight:700;font-size:.95rem;letter-spacing:.05em;
   }
   .cl-brand-text{display:flex;flex-direction:column;line-height:1.15}

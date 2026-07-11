@@ -14,6 +14,10 @@ coverage
 *.local
 BLOCKERS.md
 
+# Playwright a11y gate artifacts
+/test-results/
+/playwright-report/
+
 # Temp KAT working files / screenshots (vectors are embedded in kat-vectors.json)
 *.rsp
 .shots/
