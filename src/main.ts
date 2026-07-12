@@ -1,5 +1,6 @@
 import { renderCardGrid } from './components/CardGrid'
 import { renderConceptPrimer } from './components/ConceptPrimer'
+import { renderHero } from './components/Hero'
 import { renderMaskedComparisonCard } from './cards/card-masked-comparison'
 import { renderImperfectDfOracleCard } from './cards/card-imperfect-df-oracle'
 import { renderRnrBlindingCard } from './cards/card-rnr-blinding'
@@ -87,6 +88,8 @@ function setCard(card: CardSlug | null, scrollToReplay = false): void {
 function render(scrollToReplay = false): void {
   main.innerHTML = ''
   const selectedCard = currentCard()
+
+  main.append(renderHero())
 
   const landing = document.createElement('section')
   landing.className = 'landing-shell'
