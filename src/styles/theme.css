@@ -14,6 +14,10 @@
   --danger: #c44536;
   --success: #2d7a46;
   --warning: #c9831a;
+  /* AA-safe text tokens for danger/success labels on light tinted surfaces: the base
+     --danger/--success only reach ~4:1, so bold status text uses these darker hues (>=5:1). */
+  --danger-text: #a5301f;
+  --success-text: #1f6238;
   --mirror-glow: #5ec3de;
   --mirror-crack: #e76f51;
   --mirror-cloud: #8e9aa7;
@@ -34,6 +38,9 @@
   --danger: #ef7e72;
   --success: #6dc08a;
   --warning: #f0b861;
+  /* On dark tinted surfaces the bright danger/success already clear AA; reuse them. */
+  --danger-text: #ef7e72;
+  --success-text: #6dc08a;
   --mirror-glow: #7fd6ff;
   --mirror-crack: #ff8f7a;
   --mirror-cloud: #9eb0bd;

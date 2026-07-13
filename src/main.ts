@@ -1,5 +1,6 @@
 import { renderCardGrid } from './components/CardGrid'
 import { renderConceptPrimer } from './components/ConceptPrimer'
+import { renderDecapPrimer } from './components/DecapPrimer'
 import { renderHero } from './components/Hero'
 import { renderMaskedComparisonCard } from './cards/card-masked-comparison'
 import { renderImperfectDfOracleCard } from './cards/card-imperfect-df-oracle'
@@ -104,6 +105,9 @@ function render(scrollToReplay = false): void {
   landing.append(
     landingTitle,
     landingHint,
+    // Open the black box at diagram level before the attack cards: the normal
+    // decapsulation pipeline the three cards each perturb.
+    renderDecapPrimer(),
     renderConceptPrimer(),
     renderCardGrid((slug) => {
       setCard(slug, true)

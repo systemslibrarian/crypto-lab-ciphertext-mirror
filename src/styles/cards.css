@@ -881,3 +881,499 @@
   color: var(--text-muted);
   font-size: 0.92rem;
 }
+
+/* ── Decapsulation primer (landing) ───────────────────────────────── */
+.decap-primer {
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  background-color: color-mix(in oklab, var(--surface) 90%, var(--accent));
+  padding: 0.4rem 0.9rem;
+}
+
+.decap-primer > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.55rem 0;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  list-style: none;
+  color: var(--text);
+}
+
+.decap-primer > summary::-webkit-details-marker {
+  display: none;
+}
+
+.decap-primer > summary::before {
+  content: '▸';
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.decap-primer[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.decap-primer-badge {
+  background-color: var(--accent);
+  color: #05110f;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.decap-primer-body {
+  padding: 0.25rem 0 0.85rem;
+}
+
+.decap-primer-intro,
+.decap-primer-foot {
+  color: var(--text);
+  line-height: 1.55;
+  max-width: 76ch;
+}
+
+.decap-primer-foot {
+  margin-top: 0.7rem;
+  color: var(--text-muted);
+}
+
+.decap-pipeline {
+  list-style: none;
+  margin: 0.8rem 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.decap-stage {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  flex: 1 1 9rem;
+  min-width: 9rem;
+}
+
+.decap-stage-box {
+  position: relative;
+  flex: 1;
+  border: 1px solid var(--border-color);
+  border-radius: 0.6rem;
+  background-color: var(--surface);
+  padding: 0.55rem 0.6rem 0.6rem;
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+}
+
+.decap-stage-attack .decap-stage-box {
+  border-color: color-mix(in oklab, var(--danger) 60%, var(--border-color));
+  background-color: color-mix(in oklab, var(--surface) 86%, var(--danger) 12%);
+}
+
+.decap-stage-defense .decap-stage-box {
+  border-color: color-mix(in oklab, var(--success) 60%, var(--border-color));
+  background-color: color-mix(in oklab, var(--surface) 86%, var(--success) 12%);
+}
+
+.decap-stage-num {
+  display: inline-grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background-color: var(--surface-alt);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+}
+
+.decap-stage-label {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.decap-stage-detail {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.decap-stage-tag {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.decap-tag-attack strong {
+  color: var(--danger-text, var(--danger));
+}
+
+.decap-tag-defense strong {
+  color: var(--success-text, var(--success));
+}
+
+.decap-arrow {
+  align-self: center;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 720px) {
+  .decap-pipeline {
+    flex-direction: column;
+  }
+  .decap-stage {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .decap-arrow {
+    align-self: center;
+    transform: rotate(90deg);
+  }
+}
+
+/* ── Masking mechanism strip ──────────────────────────────────────── */
+.mech-strip {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.mech-intro {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 78ch;
+}
+
+.mech-trace-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mech-trace {
+  border: 1px solid var(--border-color);
+  border-radius: 0.6rem;
+  background-color: var(--surface);
+  padding: 0.5rem 0.6rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.mech-trace-head {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+
+.mech-trace-idx {
+  font-weight: 700;
+  color: var(--accent-text);
+  margin-right: 0.35rem;
+}
+
+.mech-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mech-op {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.mech-op-combine {
+  color: var(--accent-text);
+}
+
+.mech-tile,
+.mech-dist {
+  display: grid;
+  gap: 0.05rem;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  min-width: 6.5rem;
+  border: 1px solid var(--border-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.mech-tile {
+  background-color: var(--surface-alt);
+}
+
+/* Share tiles get distinct left borders (color) but always carry text, never
+   relying on hue alone. */
+.mech-tile-0 {
+  border-left: 4px solid var(--mirror-glow);
+}
+.mech-tile-1 {
+  border-left: 4px solid var(--mirror-crack);
+}
+.mech-tile-2 {
+  border-left: 4px solid var(--warning);
+}
+.mech-tile-3 {
+  border-left: 4px solid var(--success);
+}
+
+.mech-tile-role,
+.mech-dist-role {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.mech-tile-bit {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.mech-tile-leak {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.mech-tile-calc,
+.mech-dist-calc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.mech-dist {
+  background-color: color-mix(in oklab, var(--surface) 80%, var(--accent) 14%);
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border-color));
+}
+
+.mech-dist-val {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.mech-accum {
+  display: grid;
+  gap: 0.35rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.5rem;
+}
+
+.mech-accum-label {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text);
+}
+
+.mech-accum-track {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  height: 3.5rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background-color: var(--surface);
+}
+
+.mech-accum-dot {
+  flex: 1;
+  min-width: 0.5rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--accent) 95%, var(--mirror-glow)),
+    color-mix(in oklab, var(--accent) 60%, var(--surface-alt))
+  );
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+
+.mech-controls {
+  display: flex;
+}
+
+/* ── Tanner-graph BP visualizer ───────────────────────────────────── */
+.tanner {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.tanner-intro {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 78ch;
+}
+
+.tanner-stage {
+  border: 1px solid var(--border-color);
+  border-radius: 0.6rem;
+  background-color: var(--surface);
+  padding: 0.5rem;
+}
+
+.tanner-svg {
+  width: 100%;
+  height: auto;
+  max-width: 520px;
+  display: block;
+  margin: 0 auto;
+}
+
+.tanner-edge {
+  stroke: var(--border-color);
+  stroke-width: 2;
+}
+
+.tanner-edge.is-active {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.tanner-check {
+  fill: var(--surface-alt);
+  stroke: var(--text-muted);
+  stroke-width: 2;
+}
+
+.tanner-check.is-active {
+  stroke: var(--accent);
+}
+
+.tanner-check-label {
+  fill: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+}
+
+.tanner-var {
+  fill: var(--surface-alt);
+  stroke: var(--text-muted);
+  stroke-width: 2;
+}
+
+.tanner-var.is-correct {
+  fill: color-mix(in oklab, var(--success) 40%, var(--surface));
+  stroke: var(--success);
+}
+
+.tanner-var.is-wrong {
+  fill: color-mix(in oklab, var(--danger) 42%, var(--surface));
+  stroke: var(--danger);
+}
+
+.tanner-var-label {
+  fill: var(--text);
+  font-size: 9px;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+}
+
+.tanner-status {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.86rem;
+  min-height: 1.2rem;
+}
+
+.tanner-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.tanner-step-label {
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Bar-chart caveat badge ───────────────────────────────────────── */
+.bar-chart-badge {
+  margin: 0 0 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text);
+  background-color: color-mix(in oklab, var(--surface) 78%, var(--warning) 16%);
+  border: 1px solid color-mix(in oklab, var(--warning) 55%, var(--border-color));
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.bar-chart-badge-icon {
+  font-weight: 700;
+  color: var(--warning);
+}
+
+/* ── Accumulating recovered-key strip ─────────────────────────────── */
+.key-strip-wrap {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.key-strip-label {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.key-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.key-cell {
+  display: grid;
+  place-items: center;
+  gap: 0.1rem;
+  min-width: 3rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--border-color);
+  font-variant-numeric: tabular-nums;
+  background-color: var(--surface-alt);
+}
+
+.key-cell-1 {
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--border-color));
+  background-color: color-mix(in oklab, var(--surface) 80%, var(--accent) 14%);
+}
+
+.key-cell-idx {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+.key-cell-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── Control hint line ────────────────────────────────────────────── */
+.control-hint {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+}

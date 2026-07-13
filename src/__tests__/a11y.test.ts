@@ -11,8 +11,12 @@ import axe from 'axe-core'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { renderCardGrid } from '../components/CardGrid'
 import { renderConceptPrimer } from '../components/ConceptPrimer'
+import { renderDecapPrimer } from '../components/DecapPrimer'
+import { renderMaskingMechanismStrip } from '../components/MaskingMechanismStrip'
+import { renderTannerGraph } from '../components/TannerGraph'
 import { renderImperfectDfOracleCard } from '../cards/card-imperfect-df-oracle'
 import { renderMaskedComparisonCard } from '../cards/card-masked-comparison'
+import { sampleMaskingMechanism } from '../cards/card-masked-comparison/sim'
 import { renderRnrBlindingCard } from '../cards/card-rnr-blinding'
 
 async function violationsFor(root: HTMLElement): Promise<string[]> {
@@ -64,7 +68,18 @@ describe('accessibility (axe-core, structural)', () => {
       h2,
       renderCardGrid(() => {}),
     )
-    main.append(renderConceptPrimer(), section)
+    main.append(renderDecapPrimer(), renderConceptPrimer(), section)
+
+    expect(await violationsFor(document.body)).toEqual([])
+  })
+
+  test('teaching mechanisms (Tanner graph + mechanism strip) have no structural violations', async () => {
+    const main = document.getElementById('app') as HTMLElement
+    const h2 = document.createElement('h2')
+    h2.textContent = 'Mechanisms'
+    main.append(h2, renderTannerGraph())
+    const sample = await sampleMaskingMechanism(512, 'a11y-mech', 0.8, 0, 2)
+    main.append(renderMaskingMechanismStrip(sample))
 
     expect(await violationsFor(document.body)).toEqual([])
   })

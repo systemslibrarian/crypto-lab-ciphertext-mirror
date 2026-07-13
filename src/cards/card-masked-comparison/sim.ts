@@ -8,6 +8,10 @@ export type MaskedRunOutput = {
   curves: Record<0 | 1 | 2 | 3, number[]>
   /** Estimated traces to reach 95% confidence, per masking order. */
   tracesNeeded95: Record<0 | 1 | 2 | 3, number>
+  /** Global index (0..secretBits-1) of the real shared-secret bit this run resolved. */
+  targetIndex: number
+  /** The actual value (0/1) of that recovered ML-KEM shared-secret bit. */
+  targetBit: number
 }
 
 /**
@@ -50,6 +54,113 @@ function boxMuller(prng: Xoshiro256): number {
   const u1 = Math.max(prng.nextFloat(), 1e-12)
   const u2 = prng.nextFloat()
   return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+}
+
+/** One share of a single concrete trace, exposed for the mechanism strip. */
+export type ShareStep = {
+  /** The Boolean share bit (0/1) the device holds. */
+  bit: number
+  /** Centered Hamming weight of that bit: bit - 0.5. */
+  centered: number
+  /** Gaussian measurement noise added to this share's leak this trace. */
+  noise: number
+  /** What the attacker actually measures for this share: centered + noise. */
+  leak: number
+}
+
+/** One concrete attacker trace, decomposed into its share→leak→combine steps. */
+export type MechanismTrace = {
+  /** Decision bit the device processed this trace (targetBit XOR induced toggle). */
+  decisionBit: number
+  /** The masking order d used for this trace (d+1 shares). */
+  order: number
+  /** Per-share breakdown; XOR of the share bits equals decisionBit. */
+  shares: ShareStep[]
+  /** Product of the per-share leaks — the higher-order distinguisher for this trace. */
+  distinguisher: number
+}
+
+/** A short, honest walkthrough: the same model as the full sim, one trace at a time. */
+export type MechanismSample = {
+  /** The one real ML-KEM shared-secret bit being resolved (0/1). */
+  targetBit: number
+  /** Global secret-bit index this run targets. */
+  targetIndex: number
+  /** The masking order this walkthrough illustrates. */
+  order: number
+  /** Noise sigma used for the walkthrough leaks. */
+  sigma: number
+  /** A handful of concrete traces, each fully decomposed. */
+  traces: MechanismTrace[]
+  /** Running |correlation| between distinguisher and decision bit after each trace. */
+  runningCorrelation: number[]
+}
+
+/**
+ * Produce a small, fully-decomposed walkthrough of the SAME higher-order CPA the full
+ * replay runs — one trace at a time, showing each share, its Hamming-weight + Gaussian-noise
+ * leak, and the product distinguisher. This is not a separate toy: it calls the identical
+ * masking (`booleanMaskByte`) and leakage model (`(share-0.5)+noise*sigma`, product combiner)
+ * used inside `runMaskedComparisonSim`, so what the strip shows is exactly what the bar chart
+ * later measures — just made visible for a handful of traces instead of tens of thousands.
+ */
+export async function sampleMaskingMechanism(
+  level: MlKemLevel,
+  seedText: string,
+  sigma: number,
+  bitIndex: number,
+  order: number,
+  traceCount = 6,
+): Promise<MechanismSample> {
+  const keyPair = await mlKemKeyGen(level, seedText)
+  const encaps = await mlKemEncaps(keyPair.pk, `${seedText}:encap`)
+  const sharedSecret = await mlKemDecaps(keyPair.sk, keyPair.z, encaps.ciphertext)
+  const secretBitLength = sharedSecret.length * 8
+
+  const targetIndex = ((bitIndex % secretBitLength) + secretBitLength) % secretBitLength
+  const targetByte = sharedSecret[targetIndex >> 3] ?? 0
+  const targetBit = (targetByte >> (targetIndex & 7)) & 1
+
+  // Same seed stream shape as the full sim so the walkthrough is a faithful prefix.
+  const prng = new Xoshiro256(seedToBigInt(`${seedText}:L${level}:bit${targetIndex}:order:${order}`))
+
+  const traces: MechanismTrace[] = []
+  const runningCorrelation: number[] = []
+  let sx = 0
+  let sy = 0
+  let sxx = 0
+  let syy = 0
+  let sxy = 0
+
+  for (let t = 1; t <= traceCount; t += 1) {
+    const induced = prng.nextFloat() < 0.5 ? 0 : 1
+    const decisionBit = targetBit ^ induced
+    const shareBytes = booleanMaskByte(decisionBit, order, prng)
+
+    let combined = 1
+    const shares: ShareStep[] = []
+    for (let i = 0; i < shareBytes.length; i += 1) {
+      const bit = (shareBytes[i] ?? 0) & 1
+      const centered = bit - 0.5
+      const noise = boxMuller(prng) * sigma
+      const leak = centered + noise
+      combined *= leak
+      shares.push({ bit, centered, noise, leak })
+    }
+
+    traces.push({ decisionBit, order, shares, distinguisher: combined })
+
+    sx += combined
+    sy += decisionBit
+    sxx += combined * combined
+    syy += decisionBit * decisionBit
+    sxy += combined * decisionBit
+    const num = t * sxy - sx * sy
+    const den = Math.sqrt((t * sxx - sx * sx) * (t * syy - sy * sy))
+    runningCorrelation.push(den === 0 ? 0 : Math.abs(num / den))
+  }
+
+  return { targetBit, targetIndex, order, sigma, traces, runningCorrelation }
 }
 
 /**
@@ -144,5 +255,5 @@ export async function runMaskedComparisonSim(
     tracesNeeded95[order] = tracesFromCorrelation(finalCorrelation)
   }
 
-  return { curves, tracesNeeded95 }
+  return { curves, tracesNeeded95, targetIndex, targetBit }
 }

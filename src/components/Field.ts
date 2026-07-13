@@ -12,8 +12,12 @@ function ensureId(input: HTMLElement, prefix: string): string {
   return input.id
 }
 
-/** Wrap a text/number input in a visible, associated label. */
-export function renderTextField(labelText: string, input: HTMLInputElement): HTMLElement {
+/**
+ * Wrap a text/number input in a visible, associated label. An optional `hint` renders a
+ * small help line beneath the control and is wired via aria-describedby so screen readers
+ * announce it after the field name.
+ */
+export function renderTextField(labelText: string, input: HTMLInputElement, hint?: string): HTMLElement {
   const wrap = document.createElement('div')
   wrap.className = 'control-field'
   const id = ensureId(input, 'field')
@@ -24,6 +28,14 @@ export function renderTextField(labelText: string, input: HTMLInputElement): HTM
   // A real <label> now provides the accessible name; drop the redundant aria-label.
   input.removeAttribute('aria-label')
   wrap.append(label, input)
+  if (hint) {
+    const hintEl = document.createElement('p')
+    hintEl.className = 'control-hint'
+    hintEl.id = `${id}-hint`
+    hintEl.textContent = hint
+    input.setAttribute('aria-describedby', hintEl.id)
+    wrap.append(hintEl)
+  }
   return wrap
 }
 

@@ -4,6 +4,15 @@
 
 This demo is a browser-based educational replay centered on ML-KEM decapsulation behavior, including the K-PKE flow and the FO re-encryption comparison path. The cryptographic core is a **real FIPS 203 implementation** — Keccak/SHA-3, the matrix generation, the ML-KEM NTT, CBD sampling, compression, and the Fujisaki–Okamoto transform — written in inspectable TypeScript and **validated byte-for-byte against the official NIST known-answer vectors** for ML-KEM-512/768/1024. On top of that core, the three cards run *simulated* side-channel leakage, oracle, and blinding experiments to illustrate how the cited attacks and defenses behave. It is intended for mechanism understanding; the core is written for teaching, not constant-time hardened or CAVP-certified, so it is not for real-world deployment or attack tooling.
 
+To make the mechanisms visible rather than merely asserted, the lab opens with a labeled **decapsulation pipeline primer** (ciphertext → decrypt → re-encrypt → compare → accept/reject) that marks exactly where each card attacks or defends, and each attack card now shows the mechanism concretely: the masking card animates **one real trace decomposed** into its XOR share tiles, per-share Hamming-weight + Gaussian-noise leaks, and the product distinguisher, plus an accumulating strip of the real key bits it resolves; the DF-oracle card renders a **toy Tanner graph** running the same sum-product belief-propagation decoder, stepping through how two parity checks repair a wrong per-coefficient guess.
+
+## Exhibits
+
+1. **Decapsulation pipeline primer** — the normal ML-KEM decapsulation flow all three cards perturb, with each card's attack/defense pinned to its stage; links the sibling kyber-vault demo for the full implementation.
+2. **Card 1 — Masked Comparison Leakage (attack, ePrint 2024/060):** higher-order CPA against the masked FO comparison, with a step-by-step share→leak→combine mechanism strip, per-order trace-cost chart (labeled as scaled teaching estimates), and an accumulating recovered-key strip.
+3. **Card 2 — Imperfect DF-Oracle (attack, ePrint 2026/070):** recovery from a noisy, intermittent decryption-failure oracle, with a toy Tanner-graph belief-propagation visualizer showing parity checks correcting errors, plus the convergence curve and per-coefficient confidence strip.
+4. **Card 3 — NTT + CRT RNR Blinding (defense, ePrint 2025/181):** matched unblinded vs blinded A/B replay with optional fault injection, showing the decorrelating defense the first two cards' leaks motivate.
+
 ## When to Use It
 
 - Use this when teaching ML-KEM attack and defense mechanisms in a controlled browser lab.
@@ -27,6 +36,7 @@ Replay workflow highlights:
 - Each output includes a structured interpretation layer and an explicit limitation statement, not only raw traces or status labels.
 - A compact paper-to-demo mapping is included per replay (`Paper claim`, `This demo models`, `This demo omits`).
 - Comparison views are available where applicable: Run A vs Run B in masked comparison and unblinded vs blinded A/B in the blinding replay.
+- Mechanism views make the how visible, not just the outcome: an animated single-trace share→leak→combine strip (masking) and a step-through Tanner-graph belief-propagation decoder (DF-oracle), both computed by the same models the summary charts measure.
 
 ## What Can Go Wrong
 

@@ -6,6 +6,7 @@ import { renderProgressBar } from '../../components/ProgressBar'
 import { renderRealityPanel } from '../../components/RealityPanel'
 import { renderScholarBadge } from '../../components/ScholarBadge'
 import { renderTakeaway } from '../../components/Takeaway'
+import { renderTannerGraph } from '../../components/TannerGraph'
 import { renderTraceViewer } from '../../components/TraceViewer'
 import { renderVerdictBanner, type VerdictTone } from '../../components/VerdictBanner'
 import type { MlKemLevel } from '../../components/types'
@@ -282,6 +283,9 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
   card.append(
     head,
     takeaway,
+    // Mechanism, before the run controls: the toy Tanner graph shows *how* parity checks
+    // repair a wrong guess — the one thing the recovery curve below asserts but cannot show.
+    renderTannerGraph(),
     setup,
     runStatus,
     progressMount,

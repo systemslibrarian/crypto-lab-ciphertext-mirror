@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { MAX_TRACE_ESTIMATE, runMaskedComparisonSim } from '../sim'
+import { MAX_TRACE_ESTIMATE, runMaskedComparisonSim, sampleMaskingMechanism } from '../sim'
 
 const ORDERS = [0, 1, 2, 3] as const
 
@@ -48,5 +48,39 @@ describe('masked comparison higher-order CPA model', () => {
     const a = await runMaskedComparisonSim(768, 'deterministic', 0.6, 3)
     const b = await runMaskedComparisonSim(768, 'deterministic', 0.6, 3)
     expect(a.tracesNeeded95).toEqual(b.tracesNeeded95)
+  })
+
+  test('the run reports the real recovered key bit it resolved', async () => {
+    const r = await runMaskedComparisonSim(512, 'keybit', 0.6, 5)
+    expect(r.targetIndex).toBe(5)
+    expect([0, 1]).toContain(r.targetBit)
+  })
+})
+
+describe('masking mechanism strip is a faithful decomposition of the same model', () => {
+  test('XOR of the share bits equals the decision bit, and the distinguisher is their leak product', async () => {
+    const sample = await sampleMaskingMechanism(512, 'mech', 0.7, 0, 2, 6)
+    expect(sample.order).toBe(2)
+    expect(sample.traces).toHaveLength(6)
+    for (const trace of sample.traces) {
+      // d+1 shares whose bits XOR to the decision bit (Boolean masking invariant).
+      expect(trace.shares).toHaveLength(3)
+      const xor = trace.shares.reduce((acc, s) => acc ^ s.bit, 0)
+      expect(xor).toBe(trace.decisionBit)
+      // Each leak is exactly centered HW + noise; distinguisher is their product.
+      let product = 1
+      for (const s of trace.shares) {
+        expect(s.leak).toBeCloseTo(s.centered + s.noise, 10)
+        product *= s.leak
+      }
+      expect(trace.distinguisher).toBeCloseTo(product, 8)
+    }
+  })
+
+  test('the walkthrough resolves a real ML-KEM shared-secret bit', async () => {
+    const sample = await sampleMaskingMechanism(512, 'mech', 0.7, 9, 1, 4)
+    expect(sample.targetIndex).toBe(9)
+    expect([0, 1]).toContain(sample.targetBit)
+    expect(sample.runningCorrelation).toHaveLength(4)
   })
 })

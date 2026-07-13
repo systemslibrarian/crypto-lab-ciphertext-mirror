@@ -20,6 +20,11 @@ export type TraceBarChartOptions = {
   references?: ReferenceMarker[]
   /** Y-axis caption shown above the chart. */
   unitLabel?: string
+  /**
+   * Short caveat chip pinned to the chart itself (not just a panel below it), so a
+   * screenshot of the numbers travels with the "these aren't real break costs" warning.
+   */
+  badge?: string
 }
 
 function compactNumber(value: number): string {
@@ -42,6 +47,14 @@ function compactNumber(value: number): string {
 export function renderTraceBarChart(opts: TraceBarChartOptions): HTMLElement {
   const wrap = document.createElement('div')
   wrap.className = 'bar-chart'
+
+  if (opts.badge) {
+    const badge = document.createElement('p')
+    badge.className = 'bar-chart-badge'
+    // Text + icon (not color alone) so the caveat is conveyed non-visually too.
+    badge.innerHTML = `<span class="bar-chart-badge-icon" aria-hidden="true">ⓘ</span><span>${opts.badge}</span>`
+    wrap.append(badge)
+  }
 
   if (opts.unitLabel) {
     const cap = document.createElement('p')

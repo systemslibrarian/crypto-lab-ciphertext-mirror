@@ -1,5 +1,6 @@
 import { renderCheckboxField, renderSliderField, renderTextField } from '../../components/Field'
 import { renderInterpretationBlock } from '../../components/InterpretationBlock'
+import { renderMaskingMechanismStrip } from '../../components/MaskingMechanismStrip'
 import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
 import { renderProgressBar } from '../../components/ProgressBar'
@@ -11,25 +12,27 @@ import { renderTraceViewer } from '../../components/TraceViewer'
 import { renderVerdictBanner, type VerdictTone } from '../../components/VerdictBanner'
 import type { MlKemLevel } from '../../components/types'
 import { maskedComparisonReality } from './reality'
-import { MAX_TRACE_ESTIMATE, runMaskedComparisonSim } from './sim'
+import { MAX_TRACE_ESTIMATE, runMaskedComparisonSim, sampleMaskingMechanism } from './sim'
 
 const ORDERS = [0, 1, 2, 3] as const
 type Order = (typeof ORDERS)[number]
 
 const FLOOR_TRACES = MAX_TRACE_ESTIMATE
 
+// Tier names are deliberately hedged ("illustrative") so a screenshot of the chart cannot
+// be mis-cited as a real-world break cost — the numbers are scaled pedagogical estimates.
 const TIERS: Array<{ max: number; label: string }> = [
-  { max: 10_000, label: 'Trivial recovery tier' },
-  { max: 100_000, label: 'Weak — modest noise' },
-  { max: 1_000_000, label: 'Moderate effort' },
-  { max: 10_000_000, label: 'Strong defense' },
+  { max: 10_000, label: 'Illustrative: trivial-recovery tier' },
+  { max: 100_000, label: 'Illustrative: weak — modest noise' },
+  { max: 1_000_000, label: 'Illustrative: moderate-effort tier' },
+  { max: 10_000_000, label: 'Illustrative: strong-defense tier' },
   { max: Number.POSITIVE_INFINITY, label: 'Out of replay reach' },
 ]
 
 const REFERENCES = [
-  { at: 10_000, label: 'unprotected break tier' },
-  { at: 1_000_000, label: 'moderate effort' },
-  { at: 10_000_000, label: 'strong defense' },
+  { at: 10_000, label: 'illustrative unprotected-break tier' },
+  { at: 1_000_000, label: 'illustrative moderate-effort tier' },
+  { at: 10_000_000, label: 'illustrative strong-defense tier' },
 ]
 
 function tierFor(value: number): string {
@@ -104,9 +107,60 @@ function verdictForRun(values: Record<Order, number>, sigma: number): VerdictBun
   }
 }
 
+/**
+ * Renders the accumulating partial-key strip: one cell per resolved bit index, showing the
+ * real recovered value (0/1). Turns dead "Target bit" knob-fiddling into a visible lesson —
+ * change the bit, run, and watch a genuine ML-KEM shared-secret bit get filled in, all at
+ * the same cost. `recovered` is a live index→value map mutated across runs.
+ */
+function renderKeyStrip(recovered: Map<number, number>): HTMLElement {
+  const wrap = document.createElement('div')
+  wrap.className = 'key-strip-wrap'
+
+  const label = document.createElement('p')
+  label.className = 'key-strip-label'
+  const count = recovered.size
+  label.innerHTML =
+    count === 0
+      ? 'No key bits resolved yet — pick a <strong>Target bit</strong> and run to fill this in.'
+      : `Recovered ${count} shared-secret bit${count === 1 ? '' : 's'} so far (each cost the same to resolve):`
+  wrap.append(label)
+
+  if (count > 0) {
+    const strip = document.createElement('div')
+    strip.className = 'key-strip'
+    strip.setAttribute('role', 'img')
+    const indices = Array.from(recovered.keys()).sort((a, b) => a - b)
+    strip.setAttribute(
+      'aria-label',
+      `Recovered key bits by index: ${indices.map((i) => `bit ${i} = ${recovered.get(i)}`).join(', ')}.`,
+    )
+    indices.forEach((i) => {
+      const cell = document.createElement('span')
+      cell.className = `key-cell key-cell-${recovered.get(i)}`
+      cell.setAttribute('aria-hidden', 'true')
+      cell.title = `bit #${i} = ${recovered.get(i)}`
+      const idx = document.createElement('span')
+      idx.className = 'key-cell-idx'
+      idx.textContent = `#${i}`
+      const val = document.createElement('span')
+      val.className = 'key-cell-val'
+      val.textContent = String(recovered.get(i))
+      cell.append(idx, val)
+      strip.append(cell)
+    })
+    wrap.append(strip)
+  }
+  return wrap
+}
+
 export function renderMaskedComparisonCardView(): HTMLElement {
   const card = document.createElement('section')
   card.className = 'card-shell'
+
+  // Persists across runs within this card instance: which real key bits the attacker
+  // has resolved, and their values. Mutated whenever a run actually breaks a bit.
+  const recoveredBits = new Map<number, number>()
 
   const head = document.createElement('div')
   head.className = 'card-head'
@@ -219,6 +273,15 @@ export function renderMaskedComparisonCardView(): HTMLElement {
   resultMount.className = 'output-mount'
   resultMount.append(placeholder)
 
+  const keyBlock = document.createElement('section')
+  keyBlock.className = 'output-block key-strip-block'
+  const keyTitle = document.createElement('h3')
+  keyTitle.className = 'card-section-title'
+  keyTitle.textContent = 'Recovered key bits (accumulates across runs)'
+  const keyMount = document.createElement('div')
+  keyMount.append(renderKeyStrip(recoveredBits))
+  keyBlock.append(keyTitle, keyMount)
+
   const chartInterpretation = renderInterpretationBlock({
     whatSeeing:
       'Each bar is the traces a higher-order CPA needs at 95% confidence to recover the masked decision bit against masking order d. The distinguisher is the product of the d+1 share leakages — the optimal combiner for Boolean masking.',
@@ -302,9 +365,26 @@ export function renderMaskedComparisonCardView(): HTMLElement {
           })),
           references: REFERENCES,
           unitLabel: 'Lower is easier for the attacker. Tick marks show pedagogical reference tiers.',
+          badge:
+            'Scaled teaching estimates — not real-world break costs. Read the shape (order × noise), not the absolute numbers.',
         }),
       )
       resultMount.append(chartCard)
+
+      // Mechanism strip: one concrete trace of THIS run, decomposed. Illustrate a genuinely
+      // higher order (prefer d=2 so the XOR-split into 3 shares and their product are visible),
+      // at the same seed/sigma/bit — so what the strip shows is a faithful prefix of the run.
+      const mechOrder = 2
+      const mechSample = await sampleMaskingMechanism(level, seed, sigma, bitIndex, mechOrder)
+      resultMount.append(renderMaskingMechanismStrip(mechSample))
+
+      // Accumulating partial key: the best order broke this bit iff its estimate is below the
+      // replay ceiling (correlation lifted off the floor). Record the real recovered value.
+      if (result.tracesNeeded95[best] < FLOOR_TRACES * 0.999) {
+        recoveredBits.set(result.targetIndex, result.targetBit)
+      }
+      keyMount.innerHTML = ''
+      keyMount.append(renderKeyStrip(recoveredBits))
 
       if (compareResult) {
         const verdictB = verdictForRun(compareResult.tracesNeeded95, sigmaCompare)
@@ -340,6 +420,7 @@ export function renderMaskedComparisonCardView(): HTMLElement {
               highlight: o === bestB,
             })),
             references: REFERENCES,
+            badge: 'Scaled teaching estimates — not real-world break costs.',
           }),
         )
         resultMount.append(chartCardB)
@@ -444,7 +525,11 @@ export function renderMaskedComparisonCardView(): HTMLElement {
     renderTextField('Seed', seedInput),
     renderSliderField('Noise σ (Run A)', sigmaInput),
     renderSliderField('Noise σ (Run B)', sigmaCompareInput),
-    renderTextField('Target bit (0–255)', bitInput),
+    renderTextField(
+      'Target bit (0–255)',
+      bitInput,
+      'Changes which real key bit is resolved, not the difficulty — every bit costs the same here. Recovered bits accumulate in the key strip after each run.',
+    ),
     compareWrap,
     run,
   )
@@ -466,6 +551,7 @@ export function renderMaskedComparisonCardView(): HTMLElement {
     runStatus,
     progressMount,
     resultMount,
+    keyBlock,
     chartInterpretation,
     mapping,
     renderRealityPanel(maskedComparisonReality),
