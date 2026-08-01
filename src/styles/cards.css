@@ -537,7 +537,7 @@
   min-width: 0;
   max-width: 100%;
   border-radius: 0.45rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-control);
   padding: 0.3rem 0.5rem;
   background-color: var(--surface-alt);
   color: var(--text);

@@ -59,7 +59,7 @@
 
 .cl-link-btn,
 .cl-theme-toggle {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-control);
   background-color: var(--surface);
   color: var(--text);
   border-radius: 0.5rem;

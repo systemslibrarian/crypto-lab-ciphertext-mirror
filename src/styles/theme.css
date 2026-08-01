@@ -4,6 +4,12 @@
   --surface: #fffdf7;
   --surface-alt: #eef1e8;
   --border-color: #bec6b8;
+  /* Control boundaries only (setup inputs/selects, header link button and theme
+     toggle). Those controls are filled with --surface-alt or --surface, which sit
+     at 1.00-1.18:1 against the card behind them, so the border is the sole
+     boundary and WCAG 2.1 SC 1.4.11 requires 3:1. --border-color stays as-is for
+     decorative rules (card outlines, dividers, charts, trace tiles). */
+  --border-control: #7c8b70;
   --text: #1f2a22;
   --text-muted: #5a655d;
   --accent: #2a9d8f;
@@ -29,6 +35,7 @@
   --surface: #182422;
   --surface-alt: #223130;
   --border-color: #36514c;
+  --border-control: #57837b;
   --text: #ecf3ef;
   --text-muted: #acc0b5;
   --accent: #5cc9b8;
