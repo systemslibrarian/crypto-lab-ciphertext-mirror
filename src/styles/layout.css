@@ -21,7 +21,6 @@ main {
   margin-top: 2rem;
 }
 
-/* BEGIN cl-hero standard — managed, keep in sync across fleet */
 /* Theme mapping for this demo: --text-dim -> --text-muted, --border -> --border-color. */
 .cl-hero {
   display: flex;
@@ -82,8 +81,11 @@ main {
     flex-basis: auto;
     width: 100%;
   }
+  .cl-hero-main {
+    flex-basis: auto;
+    min-width: 0;
+  }
 }
-/* END cl-hero standard */
 
 .mirror-wrap svg,
 .paper-card,
