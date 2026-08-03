@@ -87,6 +87,17 @@ No environment variables are required.
 - Every card includes a paper citation, a simulation mapping, and an explicit omission list.
 - The code is inspectable TypeScript with deterministic seeds for reproducible replays, and
   the UI separates evidence from interpretation and from non-claims.
+- **What the page renders is gated too** (`e2e/claims.spec.ts`, run in CI with the axe scan):
+  the production build is driven in Chromium and every summary number is re-derived from the
+  chart it summarizes — the "best order"/"best estimate"/"average" metrics against the bars,
+  the masking mechanism strip's tiles against their own arithmetic (XOR of the shares equals
+  the decision bit, each leak equals its Hamming weight plus its noise, the distinguisher
+  equals the product of the leaks), the DF-oracle confidence strip against its own summary
+  count, and the blinding card's reduction percentage against its own B/A ratio. The
+  Takeaway panels' promises are checked as written (at σ=0.20 the four masking orders stay
+  within 3× of each other; at σ=1.5 d=3 costs over 1000× d=0), as are the limit and defense
+  paths: a coin-flip oracle stalls at chance, and an injected fault leaves the unblinded
+  branch TAMPERED while the blinded branch ABORTs.
 
 ---
 
