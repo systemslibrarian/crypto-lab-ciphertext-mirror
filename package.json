@@ -36,7 +36,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.39.0",
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.1",
     "@vitest/coverage-v8": "^2.1.9",
     "axe-core": "^4.12.1",
     "eslint": "^9.39.4",
