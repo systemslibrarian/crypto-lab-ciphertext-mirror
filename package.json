@@ -39,7 +39,7 @@
     "@playwright/test": "^1.62.1",
     "@vitest/coverage-v8": "^2.1.9",
     "axe-core": "^4.12.1",
-    "eslint": "^9.39.4",
+    "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
     "gh-pages": "^6.3.0",
     "jsdom": "^29.1.1",
