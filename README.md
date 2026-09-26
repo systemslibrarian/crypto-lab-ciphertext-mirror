@@ -42,6 +42,7 @@ Replay workflow highlights:
 
 - A non-constant-time ML-KEM decapsulation can leak through timing or power side channels; the FO re-encryption comparison and decoder steps are classic leakage points that simulated attacks like these target.
 - A decapsulation that reveals whether re-encryption matched — a plaintext-checking oracle — can be queried to recover the secret key over many chosen ciphertexts; the FO transform's implicit rejection must not leak this distinction.
+- An **incomplete FO comparison** can accept a changed ciphertext tail even without a timing or power leak. [Das, ePrint 2026/1682](https://eprint.iacr.org/2026/1682) (preprint, August 15, 2026) reports key recovery from affected wolfSSL ML-KEM-1024 AVX2/NEON paths under a chosen-ciphertext oracle. The pipeline primer links a separate eight-byte full-vs-truncated comparison illustration in KEM Trap; neither lab reproduces that key recovery or implicates its own FIPS 203 core.
 - Decoder behavior that depends on secret data (e.g., correction patterns) can give an attacker information; belief-propagation / LDPC-style decoders are sensitive to such leakage.
 - Treating simulated, seeded results as physical-device evidence: the experiments model mechanisms, not measured trace budgets or real break costs.
 - Reusing or mishandling randomness/NTT state outside a hardened implementation can break the security assumptions the FIPS 203 design relies on.

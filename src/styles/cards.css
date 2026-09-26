@@ -942,6 +942,23 @@
   color: var(--text-muted);
 }
 
+.decap-research-note {
+  border-inline-start: 3px solid var(--accent);
+  padding: 0.15rem 0.8rem;
+  margin-top: 0.9rem;
+  max-width: 76ch;
+}
+
+.decap-research-note h3 {
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+}
+
+.decap-research-note p {
+  margin: 0;
+  line-height: 1.55;
+}
+
 .decap-pipeline {
   list-style: none;
   margin: 0.8rem 0;

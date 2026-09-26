@@ -150,6 +150,31 @@ export function renderDecapPrimer(): HTMLElement {
 
   body.append(pipe)
 
+  // Supplementary implementation case study; it is not a fourth paper replay
+  // and none of the three attack simulations reproduce this key recovery.
+  const research = document.createElement('aside')
+  research.className = 'decap-research-note'
+  const researchTitle = document.createElement('h3')
+  researchTitle.textContent = 'Research update: a comparison that skips the tail'
+  const researchText = document.createElement('p')
+  researchText.append('An August 15, 2026 ')
+  const paper = document.createElement('a')
+  paper.href = 'https://eprint.iacr.org/2026/1682'
+  paper.textContent = 'preprint (ePrint 2026/1682)'
+  researchText.append(
+    paper,
+    ' reports key recovery from incomplete FO comparisons in affected wolfSSL ML-KEM-1024 AVX2/NEON paths under a chosen-ciphertext oracle. A changed byte in the unchecked tail can pass a prefix-only comparison; comparing every ciphertext byte rejects it. ',
+  )
+  const model = document.createElement('a')
+  model.href = 'https://systemslibrarian.github.io/crypto-lab-kem-trap/'
+  model.textContent = 'KEM Trap’s eight-byte illustration'
+  researchText.append(
+    model,
+    ' computes both outcomes. That schematic model does not reproduce the paper’s key recovery, and this lab’s FIPS 203 core is not the affected wolfSSL backend.',
+  )
+  research.append(researchTitle, researchText)
+  body.append(research)
+
   const foot = document.createElement('p')
   foot.className = 'decap-primer-foot'
   foot.innerHTML =
