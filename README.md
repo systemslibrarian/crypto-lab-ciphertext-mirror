@@ -40,6 +40,7 @@ Replay workflow highlights:
 
 ## What Can Go Wrong
 
+- **Key-generation leakage outside these decapsulation replays:** [Jahandideh, ePrint 2026/2137 (September 22, 2026)](https://eprint.iacr.org/2026/2137) reports single-trace CBD/NTT power leakage on optimized `pqm4` ML-KEM key generation (ARM Cortex-M4), with a reduced estimated lattice-attack cost for ML-KEM-768. None of the three cards models this key-generation measurement or reproduces its recovery estimates; a decapsulation-only view does not cover the whole ML-KEM implementation attack surface.
 - A non-constant-time ML-KEM decapsulation can leak through timing or power side channels; the FO re-encryption comparison and decoder steps are classic leakage points that simulated attacks like these target.
 - A decapsulation that reveals whether re-encryption matched — a plaintext-checking oracle — can be queried to recover the secret key over many chosen ciphertexts; the FO transform's implicit rejection must not leak this distinction.
 - An **incomplete FO comparison** can accept a changed ciphertext tail even without a timing or power leak. [Das, ePrint 2026/1682](https://eprint.iacr.org/2026/1682) (preprint, August 15, 2026) reports key recovery from affected wolfSSL ML-KEM-1024 AVX2/NEON paths under a chosen-ciphertext oracle. The pipeline primer links a separate eight-byte full-vs-truncated comparison illustration in KEM Trap; neither lab reproduces that key recovery or implicates its own FIPS 203 core.
