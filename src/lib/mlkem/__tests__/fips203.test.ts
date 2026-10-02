@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { mlkemDecapsInternal, mlkemEncapsInternal, mlkemKeyGenInternal } from '../fips203'
 import type { MlKemLevel } from '../params'
+import { shake256 } from '../sha3'
 
 const SIZES: Record<MlKemLevel, { ek: number; dk: number; ct: number }> = {
   512: { ek: 800, dk: 1632, ct: 768 },
@@ -71,3 +72,28 @@ describe('FIPS 203 ML-KEM core', () => {
     expect(Array.from(a.dk)).toEqual(Array.from(b.dk))
   })
 })
+
+// Regression for incomplete FO checks, motivated by ePrint 2026/2239.
+// This tests rejection coverage; it does not implement key recovery.
+for (const level of levels) {
+  test(`ML-KEM-${level}: every ciphertext byte and v coordinate rejects exactly`, () => {
+    const z = seedBytes(`coverage-z${level}`, 32)
+    const { ek, dk } = mlkemKeyGenInternal(level, seedBytes(`coverage-d${level}`, 32), z)
+    const { ciphertext, sharedSecret } = mlkemEncapsInternal(level, ek, seedBytes(`coverage-m${level}`, 32))
+    expect(mlkemDecapsInternal(level, dk, ciphertext)).toEqual(sharedSecret)
+    const dv = level === 1024 ? 5 : 4
+    const vOffset = ciphertext.length - 32 * dv
+    const bits = new Set<number>()
+    for (let i = 0; i < ciphertext.length; i += 1) bits.add(i * 8)
+    for (let i = 0; i < 256; i += 1) bits.add(vOffset * 8 + i * dv)
+    for (const bit of bits) {
+      const changed = ciphertext.slice()
+      const byte = Math.floor(bit / 8)
+      changed[byte] = changed[byte]! ^ (1 << (bit % 8))
+      const input = new Uint8Array(z.length + changed.length)
+      input.set(z)
+      input.set(changed, z.length)
+      expect(mlkemDecapsInternal(level, dk, changed), `mutated bit ${bit}`).toEqual(shake256(input, 32))
+    }
+  }, 120000)
+}

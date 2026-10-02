@@ -48,6 +48,8 @@ Replay workflow highlights:
 - Treating simulated, seeded results as physical-device evidence: the experiments model mechanisms, not measured trace budgets or real break costs.
 - Reusing or mishandling randomness/NTT state outside a hardened implementation can break the security assumptions the FIPS 203 design relies on.
 
+**Research extension:** [Das, ePrint 2026/2239](https://eprint.iacr.org/2026/2239.pdf) (preprint, September 27, 2026) extends the earlier tail-comparison case: full key recovery is reported for ML-KEM-512/768/1024 with a single unverified ciphertext **v coordinate**, against deliberately faulty comparison simulations built on kyber-py. The identifiability theorem depends on a stated regularity assumption; recovery costs are empirical and key-dependent. An unchecked u coordinate is not covered by that single-v result. This lab does not reproduce the recovery or show a break of correctly implemented ML-KEM.
+
 ## Real-World Usage
 
 - ML-KEM (FIPS 203, derived from CRYSTALS-Kyber) is the primary NIST post-quantum key-encapsulation standard for establishing shared secrets.
