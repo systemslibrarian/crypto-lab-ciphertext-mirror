@@ -176,7 +176,10 @@ export function renderDecapPrimer(): HTMLElement {
   const extensionPaper = document.createElement('a')
   extensionPaper.href = 'https://eprint.iacr.org/2026/2239.pdf'
   extensionPaper.textContent = 'Das, ePrint 2026/2239 (preprint, September 27, 2026)'
-  extension.append(extensionPaper, ' extends the case to one unverified ciphertext v coordinate on ML-KEM-512/768/1024, with recovery demonstrated against deliberately faulty comparison simulations on kyber-py. The identifiability theorem relies on a stated regularity assumption; measured costs are key-dependent. An unchecked u coordinate is outside that single-v result. Neither this primer nor KEM Trap reproduces the recovery or shows a break of correct ML-KEM.')
+  extension.append(
+    extensionPaper,
+    ' extends the case to one unverified ciphertext v coordinate on ML-KEM-512/768/1024, with recovery demonstrated against deliberately faulty comparison simulations on kyber-py. The identifiability theorem relies on a stated regularity assumption; measured costs are key-dependent. An unchecked u coordinate is outside that single-v result. Neither this primer nor KEM Trap reproduces the recovery or shows a break of correct ML-KEM.',
+  )
   research.append(researchTitle, researchText, extension)
   body.append(research)
 
