@@ -5,7 +5,7 @@
   "description": "FO re-encryption as oracle: three papers, three replays. ML-KEM attack/defense visualizations.",
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
   },
   "author": "Paul Clark <paul@systemslibrarian.dev>",
   "license": "MIT",
@@ -37,7 +37,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
-    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/coverage-v8": "^5.0.3",
     "axe-core": "^4.14.0",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
@@ -46,7 +46,7 @@
     "prettier": "^3.9.9",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.2",
+    "vite": "^8.3.4",
     "vitest": "^5.0.3"
   }
 }
