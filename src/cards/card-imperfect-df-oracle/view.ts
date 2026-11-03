@@ -1,4 +1,5 @@
 import { renderSliderField, renderTextField } from '../../components/Field'
+import { renderOracleInformation } from '../../components/OracleInformation'
 import { renderInterpretationBlock } from '../../components/InterpretationBlock'
 import { renderPaperMapping } from '../../components/PaperMapping'
 import { renderParamSelector } from '../../components/ParamSelector'
@@ -272,11 +273,11 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
 
   const takeaway = renderTakeaway({
     takeaway:
-      'A leak does not have to be clean to be fatal. Even an oracle that is wrong some of the time and silent most of the time still recovers the key — belief propagation fuses noisy per-coefficient evidence with LDPC parity checks that correct the residual errors.',
+      'A leak does not have to be clean to be fatal. Even an oracle that is wrong some of the time and silent most of the time can support key recovery — belief propagation fuses noisy per-coefficient evidence with LDPC parity checks that correct the residual errors.',
     experiments: [
       'Start at error 0.20 / availability 0.50 and run: recovery still climbs despite an unreliable oracle.',
       'Push error past 0.40 (near a coin flip): the LDPC checks slow the collapse, but near 0.50 the signal finally drowns.',
-      'Drop availability to 0.10 but keep error low: convergence slows but does not stop. Fewer answers, still leaking.',
+      'Drop availability to 0.10 but keep error low: fewer answers may still leak, but this finite budget need not recover the secret.',
     ],
   })
 
@@ -291,6 +292,7 @@ export function renderImperfectDfOracleCardView(): HTMLElement {
     progressMount,
     resultMount,
     chartInterpretation,
+    renderOracleInformation(),
     mapping,
     renderRealityPanel(imperfectDfReality),
   )
