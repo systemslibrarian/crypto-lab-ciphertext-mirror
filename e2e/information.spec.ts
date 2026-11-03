@@ -4,9 +4,10 @@ import AxeBuilder from '@axe-core/playwright';
 for (const width of [1280, 380]) {
   test(`channel endpoints and burst comparison at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto('./?card=imperfect-df-oracle');
+    await page.goto('./?card=imperfect-df-oracle#oracle-information');
     const section = page.locator('#oracle-information');
-    await section.scrollIntoViewIfNeeded();
+    await expect.poll(async () => (await section.boundingBox())?.y).toBeGreaterThanOrEqual(60);
+    await expect.poll(async () => (await section.boundingBox())?.y).toBeLessThan(200);
     await expect(section.locator('[data-info="selected"]')).toContainText('0.7136');
     await expect(section.locator('[data-error="iid"]')).toHaveText('0.1158%');
     await expect(section.locator('[data-error="burst"]')).toHaveText('5.0000%');

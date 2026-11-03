@@ -5,6 +5,10 @@
   align-items: stretch;
 }
 
+#oracle-information {
+  scroll-margin-top: 6rem;
+}
+
 .paper-card {
   background-color: var(--surface);
   border: 1px solid var(--border-color);
