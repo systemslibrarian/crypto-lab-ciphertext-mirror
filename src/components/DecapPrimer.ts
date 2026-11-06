@@ -163,7 +163,7 @@ export function renderDecapPrimer(): HTMLElement {
   paper.textContent = 'preprint (ePrint 2026/1682)'
   researchText.append(
     paper,
-    ' reports key recovery from incomplete FO comparisons in affected wolfSSL ML-KEM-1024 AVX2/NEON paths under a chosen-ciphertext oracle. A changed byte in the unchecked tail can pass a prefix-only comparison; comparing every ciphertext byte rejects it. ',
+    ' reports partial recovery of the 2048 secret coefficients (s, e) from affected wolfSSL ML-KEM-1024 binaries: 98.0% at 400 ciphertexts on native AVX2 and 98.5% at 600 on NEON under QEMU (Table 1). Full recovery of all 2048 coefficients at about 1300 ciphertexts was demonstrated only in a reference model with idealized measurement noise; the shipped-binary runs were not carried to full recovery (§§5–6.2). The attack assumes a reused key and a constructed plaintext-checking oracle that reveals decoded-bit information. The reported 10^5–10^6 decapsulation queries must target that same key; ciphertext counts are not query counts. The exported keypair is used to score recovery, not as attack input. Exposure of the same oracle through a deployed HPKE or KEMTLS AEAD path is argued, not demonstrated. A changed byte in the unchecked tail can pass a prefix-only comparison; comparing every ciphertext byte rejects it. ',
   )
   const model = document.createElement('a')
   model.href = 'https://systemslibrarian.github.io/crypto-lab-kem-trap/'
