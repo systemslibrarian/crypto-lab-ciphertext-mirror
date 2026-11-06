@@ -152,6 +152,11 @@ export function renderDecapPrimer(): HTMLElement {
 
   // Supplementary implementation case study; it is not a fourth paper replay
   // and none of the three attack simulations reproduce this key recovery.
+  // Pointers and qualifiers are scoped as the paper scopes them: QEMU belongs
+  // to the NEON run alone, the full-key figure is a model result the paper
+  // itself marks optimistic, and the deployed-protocol reach is its argument
+  // rather than its demonstration. This lab’s own masked-comparison card uses
+  // the word idealized for an unrelated single-bit leakage model; keep them apart.
   const research = document.createElement('aside')
   research.className = 'decap-research-note'
   const researchTitle = document.createElement('h3')
@@ -163,7 +168,7 @@ export function renderDecapPrimer(): HTMLElement {
   paper.textContent = 'preprint (ePrint 2026/1682)'
   researchText.append(
     paper,
-    ' reports partial recovery of the 2048 secret coefficients of ML-KEM-1024 from affected wolfSSL binaries — 98.0% at 400 ciphertexts on the AVX2 backend and 98.5% at 600 on NEON — while its verified reference model recovers all 2048 at about 1300 ciphertexts. Those three figures are quoted from the preprint’s own abstract, which is the part of it we have read. The attack assumes a reused key and a constructed plaintext-checking oracle, and the reported 10^5–10^6 decapsulation queries must target that same key; ciphertext counts are not query counts. The exported keypair is used to score recovery, not as attack input. This page does not show that any deployed protocol exposes the same oracle. A changed byte in the unchecked tail can pass a prefix-only comparison; comparing every ciphertext byte rejects it. ',
+    ' reports partial recovery of the 2048 secret coefficients of ML-KEM-1024 from affected wolfSSL binaries. Table 1 on p. 5 carries both hardware figures: 98.0% at 400 ciphertexts on the AVX2 backend, which is native x86-64, and 98.5% at 600 on NEON, which is ARM64 under QEMU emulation; §5 on pp. 5–6 describes both runs. The full key is reached in the paper’s compressed kyber-py reference model rather than on hardware, and that model assumes idealized ±q/64 measurement noise: it recovers 2047 of 2048 coefficients by 700 ciphertexts and all 2048 at about 1300 ciphertexts (p. 6). The paper marks those model counts optimistic, because the live measurement noise is not the clean i.i.d. ±q/64 the model assumes. The attack assumes a reused key and a constructed plaintext-checking oracle, and §6.2 on p. 7 requires all 10^5–10^6 decapsulations to land on one key before it rotates; ciphertext counts are not query counts. The exported keypair is used to score recovery, not as attack input. §6.2 argues that HPKE static recipients and KEMTLS long-term keys are reachable when the key is long-lived, and less so under frequent rotation; the paper labels that reach argued, not demonstrated, on pp. 3 and 7. This page does not show that any deployed protocol exposes the same oracle. A changed byte in the unchecked tail can pass a prefix-only comparison; comparing every ciphertext byte rejects it. ',
   )
   const model = document.createElement('a')
   model.href = 'https://systemslibrarian.github.io/crypto-lab-kem-trap/'
