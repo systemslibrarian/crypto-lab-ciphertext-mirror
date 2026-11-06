@@ -35,7 +35,7 @@ const replayContextByCard: Record<CardSlug, ReplayContext> = {
   },
   'rnr-blinding': {
     title: 'NTT + CRT RNR Blinding Replay',
-    citation: 'Duparc, Taha, ePrint 2025/181',
+    citation: 'Taha et al., ePrint 2025/181',
     context: 'Matched A/B replay compares unblinded and blinded behavior with optional fault injection.',
     summary: 'This replay demonstrates directional defense impact in synthetic leakage and branch-state outcomes.',
   },

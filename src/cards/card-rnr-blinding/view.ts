@@ -76,10 +76,10 @@ export function renderRnrBlindingCardView(): HTMLElement {
   head.append(
     titleBlock,
     renderScholarBadge({
-      title: 'Improved NTT and CRT-based RNR Blinding for Side-Channel and Fault Resistant Kyber',
+      title: 'Combined blinding Side-Channel and Fault countermeasures for Lattice-Based schemes',
       year: 2025,
       eprintId: '181',
-      authorLine: 'Duparc, Taha',
+      authorLine: 'Taha, Cam, Duparc, Pelletier, Villegas',
       url: 'https://eprint.iacr.org/2025/181',
     }),
   )

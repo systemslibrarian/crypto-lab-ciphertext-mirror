@@ -2,7 +2,7 @@ import type { RealityContent } from '../../components/types'
 
 export const rnrBlindingReality: RealityContent = {
   paper:
-    'Duparc and Taha (2025/181), Improved NTT and CRT-based RNR Blinding for Side-Channel and Fault Resistant Kyber',
+    'Duparc and Taha (2025/181), Combined blinding Side-Channel and Fault countermeasures for Lattice-Based schemes',
   whatPaperShows:
     'Duparc and Taha (2025/181) introduce an NTT and CRT-based RNR blinding scheme for Kyber that provides resistance against both side-channel analysis and fault injection, with explicit fault-detection on the blinded path.',
   whatSimModels: [
