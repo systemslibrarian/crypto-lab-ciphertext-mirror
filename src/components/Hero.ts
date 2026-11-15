@@ -15,7 +15,7 @@ export function renderHero(): HTMLElement {
     </div>
     <aside class="cl-hero-why" aria-label="Why it matters">
       <span class="cl-hero-why-label">WHY IT MATTERS</span>
-      <p class="cl-hero-why-text">ML-KEM is the NIST post-quantum standard now shipping in TLS and messaging. Its math is quantum-safe, but a real device can still leak the private key through power, timing, or fault behavior — so implementations must defend the mirror, not just trust it.</p>
+      <p class="cl-hero-why-text">ML-KEM is the NIST post-quantum standard now shipping in TLS and messaging. Its math is believed quantum-safe (no known quantum attack), but a real device can still leak the private key through power, timing, or fault behavior — so implementations must defend the mirror, not just trust it.</p>
     </aside>
   `
   return header
