@@ -2,9 +2,9 @@ import type { RealityContent } from '../../components/types'
 
 export const rnrBlindingReality: RealityContent = {
   paper:
-    'Duparc and Taha (2025/181), Combined blinding Side-Channel and Fault countermeasures for Lattice-Based schemes',
+    'Taha, Cam, Duparc, Pelletier, Villegas (2025/181), Combined blinding Side-Channel and Fault countermeasures for Lattice-Based schemes',
   whatPaperShows:
-    'Duparc and Taha (2025/181) introduce an NTT and CRT-based RNR blinding scheme for Kyber that provides resistance against both side-channel analysis and fault injection, with explicit fault-detection on the blinded path.',
+    'Taha et al. (2025/181) revisit and enhance two existing blinding countermeasures rather than introducing them: the NTT blinding of Ravi et al. and the CRT-based RNR blinding of Heinz and Pöppelmann. Their contribution is a new blinded-NTT construction, a CRT-based RNR variant that samples fewer random bits with a better-integrated fault-detection mechanism, and the observation that the two are fully compatible, so combining them resists both side-channel analysis and fault injection. The proof of concept is integrated into Kyber/ML-KEM.',
   whatSimModels: [
     'Blinding-mask insertion and removal around coefficient-domain operations.',
     'Leakage correlation comparison between unblinded and blinded paths under the same synthetic model.',
