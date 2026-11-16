@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { auditControlNames, formatControlNameFailures } from './control-names';
 
 for (const width of [1280, 380]) {
   test(`channel endpoints and burst comparison at ${width}px`, async ({ page }) => {
@@ -25,6 +26,7 @@ for (const width of [1280, 380]) {
     await expect(section.locator('[data-error="burst"]')).toHaveText('20.0000%');
     await expect(section.locator('[data-error="iid"]')).not.toHaveText('20.0000%');
     expect((await new AxeBuilder({ page }).include('#oracle-information').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()).violations).toEqual([]);
+    expect(formatControlNameFailures(await auditControlNames(page)), 'form controls named only by placeholder/title').toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 }
