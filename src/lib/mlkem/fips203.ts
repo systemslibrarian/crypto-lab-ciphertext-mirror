@@ -370,3 +370,41 @@ export function levelFromKeyLength(length: number): MlKemLevel {
   if (length === 1568 || length === 3168) return 1024
   throw new Error(`Unrecognized ML-KEM key length: ${length}`)
 }
+
+/** FIPS 203 §7.2. Encoded public-key coefficients must already lie in [0, q). */
+export function checkEncapsulationKey(ek: Uint8Array): MlKemLevel {
+  requireByteArray(ek)
+  const level = levelFromKeyLength(ek.length)
+  const { k } = paramsFor(level)
+  if (ek.length !== 384 * k + 32) throw new Error('Incorrect ML-KEM encapsulation key length')
+  for (let offset = 0; offset < 384 * k; offset += 384) {
+    const encoded = ek.subarray(offset, offset + 384)
+    const canonical = byteEncode(byteDecode(encoded, 12), 12)
+    if (!canonical.every((value, i) => value === encoded[i])) {
+      throw new Error('Noncanonical ML-KEM encapsulation key')
+    }
+  }
+  return level
+}
+
+/** FIPS 203 §7.3. These input errors precede the internal implicit-rejection step. */
+export function checkDecapsulationInputs(dk: Uint8Array, ciphertext: Uint8Array): MlKemLevel {
+  requireByteArray(dk)
+  requireByteArray(ciphertext)
+  const level = levelFromKeyLength(dk.length)
+  const { k, du, dv } = paramsFor(level)
+  if (dk.length !== 768 * k + 96) throw new Error('Incorrect ML-KEM decapsulation key length')
+  if (ciphertext.length !== 32 * (du * k + dv)) throw new Error('Incorrect ML-KEM ciphertext length')
+  const hashStart = 768 * k + 32
+  const hash = H(dk.subarray(384 * k, hashStart))
+  if (!hash.every((value, i) => value === dk[hashStart + i])) {
+    throw new Error('Inconsistent ML-KEM decapsulation key hash')
+  }
+  return level
+}
+
+function requireByteArray(value: Uint8Array): void {
+  if (!ArrayBuffer.isView(value) || Object.prototype.toString.call(value) !== '[object Uint8Array]') {
+    throw new TypeError('Expected an ML-KEM byte array')
+  }
+}

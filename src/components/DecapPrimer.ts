@@ -43,9 +43,9 @@ const STAGES: Stage[] = [
   },
   {
     key: 'branch',
-    label: 'Accept K  /  Reject → K̄',
+    label: 'Return a 32-byte secret',
     detail:
-      'If the mirror matches, output the real shared secret K. If not, output a pseudo-random reject value K̄ (implicit rejection) so failures reveal nothing by design.',
+      'A match returns the shared secret K. A mismatch returns a pseudorandom fallback secret K̄. Both are 32 bytes. The caller receives no flag saying which value was returned.',
   },
 ]
 
@@ -95,6 +95,11 @@ export function renderDecapPrimer(): HTMLElement {
   intro.innerHTML =
     'Decapsulation is how the receiver turns a ciphertext back into the shared secret. ML-KEM never trusts a raw decryption: it <strong>re-encrypts and compares</strong> (the Fujisaki–Okamoto "mirror") before accepting. Every card below attacks or defends one step of this exact pipeline — the highlighted stage tells you which.'
   body.append(intro)
+
+  const inputs = document.createElement('p')
+  inputs.textContent =
+    'Before this flow begins, the receiver checks the ciphertext length and the decapsulation key. For ML-KEM-768, a 1,087-byte ciphertext gives an input error. A 1,088-byte ciphertext passes the length check. With a checked key, it reaches the comparison below.'
+  body.append(inputs)
 
   // Pipeline: labeled boxes joined by arrows. role=list so the ordered flow is
   // announced as a sequence; each stage is a listitem with its plain-language detail.
